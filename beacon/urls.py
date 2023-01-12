@@ -26,4 +26,9 @@ urlpatterns = [
     path("scn/<int:pk>",views.ScenarioDetailAPIView.as_view()),
 
     path("entity/",views.EntityListCreateAPIView.as_view()),
+    path("entity/<int:pk>",views.EntityDetailAPIView.as_view()),
+
+
+    path("atr/",views.AttributeListCreateAPIView.as_view()),
+    path("atr/<int:pk>",views.AttributeDetailAPIView.as_view()),
 ]

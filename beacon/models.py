@@ -9,6 +9,7 @@ class Period(models.Model):
         return self.period
 
 class Scenario(models.Model):
+
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=500, blank=True, null=True)
     version = models.IntegerField()
@@ -24,3 +25,12 @@ class Entity(models.Model):
 
     def __str__(self):
         return self.name
+
+class Attribute(models.Model):
+    attribute_name = models.CharField(max_length=100)
+    attribute_value = models.CharField(max_length=50)
+    begin_date = models.DateField()
+    end_date = models.DateField(null=True, blank = True)
+
+    def __str__(self):
+        return self.attribute_name

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Period,Scenario,Entity
+from .models import Period,Scenario,Entity, Attribute
 
 class PeriodSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,3 +26,14 @@ class EntitySerializer(serializers.ModelSerializer):
             "entity_type",
             "scenario"
         ]
+class AttributeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attribute
+        fields = [
+            "attribute_value",
+            "attribute_name",
+            "begin_date",
+            "end_date",
+        ]
+
+        
