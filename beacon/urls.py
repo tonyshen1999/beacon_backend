@@ -19,6 +19,7 @@ from . import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
     path("pd/",views.PeriodListCreateAPIView.as_view()),
     path("pd/<str:period>/",views.PeriodDetailAPIView.as_view()),
     
@@ -31,4 +32,10 @@ urlpatterns = [
 
     path("atr/",views.AttributeListCreateAPIView.as_view()),
     path("atr/<int:pk>",views.AttributeDetailAPIView.as_view()),
+
+    path("acc/",views.AccountListCreateAPIView.as_view()),
+    path("acc/<int:pk>",views.AccountDetailAPIView.as_view()),
+
+    path("adj/",views.AdjustmentListCreateAPIView.as_view()),
+    path("adj/<int:pk>",views.AdjustmentDetailAPIView.as_view()),
 ]

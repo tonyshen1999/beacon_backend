@@ -53,7 +53,7 @@ class Attribute(models.Model):
     attribute_value = models.CharField(max_length=50)
     begin_date = models.DateField()
     end_date = models.DateField(null=True, blank = True)
-
+    scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
     def __str__(self):
         return self.attribute_name
 
@@ -69,6 +69,7 @@ class Account(models.Model):
     currency = models.ForeignKey(Currency,on_delete=models.CASCADE, null=True, blank=True)
     entity = models.ForeignKey(Entity,on_delete=models.CASCADE)
     data_type = models.IntegerField(null=True, blank=True)
+    scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
     def __str__(self):
         return   self.account_name  + ", " + self.entity.__str__()
 
