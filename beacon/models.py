@@ -4,13 +4,14 @@ class Period(models.Model):
     period = models.CharField(max_length=10)
     begin_date = models.DateField()
     end_date = models.DateField()
+    
 
     def __str__(self):
         return self.period
 
 class Scenario(models.Model):
 
-    scn_id = models.IntegerField(primary_key=True)
+    scn_id = models.IntegerField(primary_key=True, unique = True)
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=500, blank=True, null=True)
     version = models.IntegerField()
@@ -41,7 +42,7 @@ class Country(models.Model):
 
 
 class Entity(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique = True)
     entity_type = models.CharField(max_length=50)
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
     country = models.ForeignKey(Country,on_delete=models.CASCADE,blank=True,null=True)
@@ -70,6 +71,9 @@ class Account(models.Model):
     entity = models.ForeignKey(Entity,on_delete=models.CASCADE)
     data_type = models.IntegerField(null=True, blank=True)
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('account_name', 'scenario',)
     def __str__(self):
         return   self.account_name  + ", " + self.entity.__str__()
 

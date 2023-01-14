@@ -1,7 +1,7 @@
 import requests
 
-endpoint = "http://127.0.0.1:8000/atr/1"
+endpoint = "http://127.0.0.1:8000/calc/"
 
-response = requests.get(endpoint)
+response = requests.post(endpoint)
 
-print(response.json())
+print(requests.get("http://127.0.0.1:8000/acc/").json())

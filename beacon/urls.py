@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from . import views
+from . import views,calcviews
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -38,4 +38,6 @@ urlpatterns = [
 
     path("adj/",views.AdjustmentListCreateAPIView.as_view()),
     path("adj/<int:pk>",views.AdjustmentDetailAPIView.as_view()),
+
+    path("calc/",calcviews.calculate),
 ]

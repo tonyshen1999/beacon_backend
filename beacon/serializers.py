@@ -13,6 +13,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scenario
         fields = [
+            "scn_id",
             "name",
             "description",
             "version",
@@ -24,6 +25,7 @@ class EntitySerializer(serializers.ModelSerializer):
         fields = [
             "name",
             "entity_type",
+            "country",
             "scenario"
         ]
 class AttributeSerializer(serializers.ModelSerializer):
@@ -34,6 +36,7 @@ class AttributeSerializer(serializers.ModelSerializer):
             "attribute_name",
             "begin_date",
             "end_date",
+            "scneario",
         ]
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -47,7 +50,8 @@ class AccountSerializer(serializers.ModelSerializer):
             "acc_class",
             "currency",
             "entity",
-            "data_type"
+            "data_type",
+            "scenario",
         ]
 class AdjustmentSerializer(serializers.ModelSerializer):
     class Meta:
