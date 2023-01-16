@@ -1,26 +1,27 @@
 from django.db import models
 
+
+
+class Scenario(models.Model):
+
+    scn_id = models.IntegerField(default=1,primary_key=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(max_length=500, blank=True, null=True)
+    version = models.IntegerField(default=1)
+
+        
+
+    def __str__(self):
+        return str(self.scn_id) + "." + str(self.version) + ": " + self.name
+
 class Period(models.Model):
     period = models.CharField(max_length=10)
     begin_date = models.DateField()
     end_date = models.DateField()
-    
+    scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
 
     def __str__(self):
         return self.period
-
-class Scenario(models.Model):
-
-    scn_id = models.IntegerField(primary_key=True, unique = True)
-    name = models.CharField(max_length=200)
-    description = models.TextField(max_length=500, blank=True, null=True)
-    version = models.IntegerField()
-    periods = models.ManyToManyField(Period)
-
-    def __str__(self):
-        return str(self.scn_id) + ": " + self.name
-
-
 
 # This should autopopulate when initialized
 class Currency(models.Model):

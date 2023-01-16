@@ -7,7 +7,8 @@ class PeriodSerializer(serializers.ModelSerializer):
         fields = [
             "period",
             "begin_date",
-            "end_date" 
+            "end_date",
+            "scenario"
         ]
 class ScenarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,7 +18,6 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "version",
-            "periods"
         ]
 class EntitySerializer(serializers.ModelSerializer):
     class Meta:
