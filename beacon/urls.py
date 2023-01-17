@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 
-from . import views,calcviews
+from . import views,calcviews,importviews
 from rest_framework import routers
 
 
@@ -38,7 +38,7 @@ urlpatterns = [
     path("entity/<int:pk>",views.EntityDetailAPIView.as_view()),
 
 
-    path("atr/",views.AttributeListCreateAPIView.as_view()),
+    path("atr/",views.attributeAPI),
     path("atr/<int:pk>",views.AttributeDetailAPIView.as_view()),
 
     path("acc/",views.accountAPI),
@@ -48,6 +48,8 @@ urlpatterns = [
     path("adj/<int:pk>",views.AdjustmentDetailAPIView.as_view()),
 
     path("calc/",calcviews.calculate),
+
+    path("import/",importviews.importTables)
     # url(r'^', include(router.urls)),
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

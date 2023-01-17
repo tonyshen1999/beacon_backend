@@ -36,7 +36,7 @@ class AttributeSerializer(serializers.ModelSerializer):
             "attribute_name",
             "begin_date",
             "end_date",
-            "scneario",
+            "entity"
         ]
 
 class AccountSerializer(serializers.ModelSerializer):

@@ -4,12 +4,13 @@ from django.db import models
 
 class Scenario(models.Model):
 
-    scn_id = models.IntegerField(default=1,primary_key=True)
+    scn_id = models.IntegerField(default=1,primary_key=False)
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=500, blank=True, null=True)
     version = models.IntegerField(default=1)
 
-        
+    class Meta:
+        unique_together = ("scn_id", "version")
 
     def __str__(self):
         return str(self.scn_id) + "." + str(self.version) + ": " + self.name
@@ -43,10 +44,13 @@ class Country(models.Model):
 
 
 class Entity(models.Model):
-    name = models.CharField(max_length=200, unique = True)
+    name = models.CharField(max_length=200)
     entity_type = models.CharField(max_length=50)
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
     country = models.ForeignKey(Country,on_delete=models.CASCADE,blank=True,null=True)
+    class Meta:
+        unique_together = ('name', 'scenario')
+
     def __str__(self):
         return self.name
 
@@ -55,7 +59,8 @@ class Attribute(models.Model):
     attribute_value = models.CharField(max_length=50)
     begin_date = models.DateField()
     end_date = models.DateField(null=True, blank = True)
-    scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
+    # scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
+    entity = models.ForeignKey(Entity,on_delete=models.CASCADE)
     def __str__(self):
         return self.attribute_name
 
@@ -74,7 +79,7 @@ class Account(models.Model):
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('account_name', 'scenario',)
+        unique_together = ('account_name', 'scenario','entity')
     def __str__(self):
         return   self.account_name  + ", " + self.entity.__str__()
 

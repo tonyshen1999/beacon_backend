@@ -51,7 +51,10 @@ def scenariosAPI(request):
 @api_view(['GET','POST'])
 def entityAPI(request):
     if request.method == 'GET':
-        entities = Entity.objects.all()
+        print(request.GET.get("scn_id"))
+        print(request.GET.get("version"))
+        scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
+        entities = Entity.objects.filter(scenario=scn).all()
         serializer = EntitySerializer(entities,many=True)
         
         return JsonResponse({"entities":serializer.data})
@@ -66,7 +69,8 @@ def entityAPI(request):
 @api_view(['GET','POST'])
 def periodAPI(request):
     if request.method == 'GET':
-        periods = Period.objects.all()
+        scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
+        periods = Period.objects.filter(scenario=scn).all()
         serializer = PeriodSerializer(periods,many=True)
         
         return JsonResponse({"periods":serializer.data})
@@ -83,7 +87,9 @@ def periodAPI(request):
 @api_view(['GET','POST'])
 def accountAPI(request):
     if request.method == 'GET':
-        accounts = Account.objects.all()
+        scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
+
+        accounts = Account.objects.filter(scenario=scn).all()
         serializer = AccountSerializer(accounts,many=True)
         
         return JsonResponse({"accounts":serializer.data})
@@ -99,13 +105,32 @@ def accountAPI(request):
 @api_view(['GET','POST'])
 def adjustmentAPI(request):
     if request.method == 'GET':
-        adjustments = Adjustment.objects.all()
+        scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
+        
+        adjustments = Adjustment.objects.filter(account__scenario=scn).all()
         serializer = AdjustmentSerializer(adjustments,many=True)
         
         return JsonResponse({"adjustments":serializer.data})
     if request.method == 'POST':
         
         serializer = AdjustmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+@api_view(['GET','POST'])
+def attributeAPI(request):
+    
+    if request.method == 'GET':
+        
+        attributes = Attribute.objects.all()
+        serializer = AttributeSerializer(attributes,many=True)
+        
+        return JsonResponse({"attributes":serializer.data})
+    if request.method == 'POST':
+        
+        serializer = AttributeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
