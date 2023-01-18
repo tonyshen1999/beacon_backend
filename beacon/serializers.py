@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency
+from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship
 
 class PeriodSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,7 +64,7 @@ class AdjustmentSerializer(serializers.ModelSerializer):
             "adj_percentage",
             "adj_amount"
         ]
-class Currency(serializers.ModelSerializer):
+class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = [
@@ -74,10 +74,19 @@ class Currency(serializers.ModelSerializer):
             "avg_rate",
             "end_spot_rate"
         ]
-class Country(serializers.ModelSerializer):
+class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = [
             "name",
             "currency"
+        ]
+class RelationshipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Relationship
+        fields = [
+            "parent",
+            "child",
+            "ownership_percentage",
+            "scenario"
         ]

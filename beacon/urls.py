@@ -47,6 +47,9 @@ urlpatterns = [
     path("adj/",views.adjustmentAPI),
     path("adj/<int:pk>",views.AdjustmentDetailAPIView.as_view()),
 
+    path("rel/",views.relationshipAPI),
+    path("rel/<int:pk>",views.AdjustmentDetailAPIView.as_view()),
+
     path("calc/",calcviews.calculate),
 
     path("import/",importviews.importTables)

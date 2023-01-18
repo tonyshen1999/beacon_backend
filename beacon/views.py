@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics,viewsets
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer,RelationshipSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from django.views.decorators.csrf import csrf_exempt
@@ -131,6 +131,24 @@ def attributeAPI(request):
     if request.method == 'POST':
         
         serializer = AttributeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def relationshipAPI(request):
+    
+    if request.method == 'GET':
+        
+        relationships = Relationship.objects.all()
+        serializer = RelationshipSerializer(relationships,many=True)
+        
+        return JsonResponse({"relationships":serializer.data})
+    if request.method == 'POST':
+        
+        serializer = RelationshipSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)

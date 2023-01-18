@@ -94,3 +94,13 @@ class Adjustment(models.Model):
 
     def __str__(self):
         return self.account.__str__() + ", " + self.adj_type
+
+class Relationship(models.Model):
+
+    parent = models.ForeignKey(Entity, related_name='parent', on_delete=models.CASCADE)
+    child = models.ForeignKey(Entity, related_name='child', on_delete=models.CASCADE)
+    ownership_percentage = models.FloatField()
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.parent.__str__() + " owns " + self.child.__str__()

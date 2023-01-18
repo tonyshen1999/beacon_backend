@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from TestModel import TestModel
@@ -36,6 +36,8 @@ def importTables(request):
     scn = Scenario.objects.filter(scn_id=scn_id,version=version)[0]
     if "Things" in data.keys():
         importEntities(data["Things"],scn)
+    if "Relationships" in data.keys():
+        importRelationships(data["Relationships"],scn)
     # print(Entity.objects.filter(name = "Braun, King and Barrows"))
     if "Accounts" in data.keys():
         importAccounts(data["Accounts"],scn)
@@ -43,6 +45,7 @@ def importTables(request):
         importAttributes(data["Attributes"],scn)
     if "Adjustments" in data.keys():
         importAdjustments(data["Adjustments"],scn)
+    
     return Response(request.data,status=status.HTTP_201_CREATED)
 
 def importEntities(table_data,scn):
@@ -54,6 +57,26 @@ def importEntities(table_data,scn):
         # print(row["Thing"],row["Type"])
         entity = Entity.objects.create(name=row["Thing"],entity_type=row["Type"],scenario=scn)
         entity.save()
+def importRelationships(table_data,scn):
+    Relationship.objects.filter(scenario=scn).all().delete()
+
+    for row in table_data:
+        print(row)
+        try:
+            parent = Entity.objects.filter(scenario=scn,name=row["Parent"].strip())[0]
+        except:
+            raise Exception(row["Parent"] + " is not a defined entity")
+        try:
+            child = Entity.objects.filter(scenario=scn,name=row["Child"].strip())[0]
+        except:
+            raise Exception(row["Child"] + " is not a defined entity")
+        relationship = Relationship.objects.create(
+            parent=parent,
+            child=child,
+            ownership_percentage=float(row["Ownership Percentage"]),
+            scenario=scn
+            )
+        relationship.save()
 
 '''
 NOT CURRENTLY USING CURRENCY, ACCOUNT CLASS, DATA TYPE
@@ -62,7 +85,7 @@ def importAccounts(table_data,scn):
 
     Account.objects.filter(scenario=scn,collection="TBFC").all().delete()
     for row in table_data:
-        print(row['Entity'])
+        # print(row['Entity'])
         try:
             pd = Period.objects.filter(period=row["Period"].strip(),scenario=scn)[0]
         except:
