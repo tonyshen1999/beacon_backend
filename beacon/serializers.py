@@ -19,15 +19,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "description",
             "version",
         ]
-class EntitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entity
-        fields = [
-            "name",
-            "entity_type",
-            "country",
-            "scenario"
-        ]
+
 class AttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attribute
@@ -36,10 +28,43 @@ class AttributeSerializer(serializers.ModelSerializer):
             "attribute_name",
             "begin_date",
             "end_date",
-            "entity"
+            "entity_name",
         ]
+class RelationshipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Relationship
+        fields = [
+            "parent_name",
+            "child_name",
+            "ownership_percentage",
 
+        ]
+class EntitySerializer(serializers.ModelSerializer):
+    relationships = RelationshipSerializer
+    attributes=AttributeSerializer
+    class Meta:
+        model = Entity
+        fields = [
+            "name",
+            "entity_type",
+            "country",
+            "scenario"
+        ]
+class AdjustmentSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Adjustment
+        fields = [
+            "account_name",
+            "entity",
+            "adj_type",
+            "adj_collection",
+            "adj_class",
+            "adj_percentage",
+            "adj_amount"
+        ]
 class AccountSerializer(serializers.ModelSerializer):
+    adjustments = AdjustmentSerializer
     class Meta:
         model = Account
         fields = [
@@ -53,17 +78,7 @@ class AccountSerializer(serializers.ModelSerializer):
             "data_type",
             "scenario",
         ]
-class AdjustmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Adjustment
-        fields = [
-            "account",
-            "adj_type",
-            "adj_collection",
-            "adj_class",
-            "adj_percentage",
-            "adj_amount"
-        ]
+
 class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
@@ -80,13 +95,4 @@ class CountrySerializer(serializers.ModelSerializer):
         fields = [
             "name",
             "currency"
-        ]
-class RelationshipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Relationship
-        fields = [
-            "parent",
-            "child",
-            "ownership_percentage",
-            "scenario"
         ]

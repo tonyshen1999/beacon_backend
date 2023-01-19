@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import json
 from .models import Scenario,Entity,Account,Attribute,Adjustment,Period
-import datetime
+from datetime import datetime
 
 table_dict = {
     "things":Entity,
@@ -110,7 +110,9 @@ def importAccounts(table_data,scn):
 def importAttributes(table_data,scn):
     Attribute.objects.filter(entity__scenario=scn).all().delete()
     for row in table_data:
-        print(row)
+        # date = datetime.strptime(row["AttributeStartDate"],"yyyy-mm-dd hh:mm:ss")
+        print(row["AttributeStartDate"].split("T")[0])
+        
         try:
             entity = Entity.objects.filter(name = row["Entity"].strip())[0]
         except:
@@ -122,7 +124,7 @@ def importAttributes(table_data,scn):
         attribute = Attribute.objects.create(
             attribute_name = row["AttributeName"],
             attribute_value = (row["AttributeValue"]),
-            begin_date = datetime.date.fromordinal(row["AttributeStartDate"]),
+            begin_date = row["AttributeStartDate"].split("T")[0],
             end_date = endDate,
             entity = entity,
         )

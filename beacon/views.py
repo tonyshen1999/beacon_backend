@@ -123,10 +123,12 @@ def adjustmentAPI(request):
 def attributeAPI(request):
     
     if request.method == 'GET':
-        
+       
         attributes = Attribute.objects.all()
+
         serializer = AttributeSerializer(attributes,many=True)
-        
+        # return JsonResponse(attributes, safe=False)
+
         return JsonResponse({"attributes":serializer.data})
     if request.method == 'POST':
         
@@ -141,8 +143,8 @@ def attributeAPI(request):
 def relationshipAPI(request):
     
     if request.method == 'GET':
-        
-        relationships = Relationship.objects.all()
+        scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
+        relationships = Relationship.objects.filter(scenario_id=scn).all()
         serializer = RelationshipSerializer(relationships,many=True)
         
         return JsonResponse({"relationships":serializer.data})

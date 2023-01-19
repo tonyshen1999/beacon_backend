@@ -63,7 +63,9 @@ class Attribute(models.Model):
     entity = models.ForeignKey(Entity,on_delete=models.CASCADE)
     def __str__(self):
         return self.attribute_name
-
+    @property
+    def entity_name(self):
+        return  self.entity.name
 
 
 class Account(models.Model):
@@ -94,6 +96,12 @@ class Adjustment(models.Model):
 
     def __str__(self):
         return self.account.__str__() + ", " + self.adj_type
+    @property
+    def account_name(self):
+        return self.account.account_name
+    @property
+    def entity(self):
+        return self.account.entity.name
 
 class Relationship(models.Model):
 
@@ -104,3 +112,9 @@ class Relationship(models.Model):
 
     def __str__(self):
         return self.parent.__str__() + " owns " + self.child.__str__()
+    @property
+    def parent_name(self):
+        return self.parent.name
+    @property
+    def child_name(self):
+        return self.child.name
