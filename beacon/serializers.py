@@ -18,6 +18,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "version",
+            "modify_date",
         ]
 
 class AttributeSerializer(serializers.ModelSerializer):

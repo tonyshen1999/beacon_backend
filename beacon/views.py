@@ -35,10 +35,17 @@ class ScenarioFilter(filters.FilterSet):
 @api_view(['GET','POST'])
 def scenariosAPI(request):
     if request.method == 'GET':
-        scenarios = Scenario.objects.all()
-        serializer = ScenarioSerializer(scenarios,many=True)
+        if request.GET.get("scn_id") == None:
+            scenarios = Scenario.objects.all()
+            
+        else:
+
+            scenarios = Scenario.objects.filter(scn_id=request.GET.get("scn_id")).all()
         
+        serializer = ScenarioSerializer(scenarios,many=True)
+            
         return JsonResponse({"scenarios":serializer.data})
+
     if request.method == 'POST':
         
         serializer = ScenarioSerializer(data=request.data)
@@ -68,15 +75,24 @@ def entityAPI(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 @api_view(['GET','POST'])
 def periodAPI(request):
+    print(request.method)
     if request.method == 'GET':
+        print(request.data)
         scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
         periods = Period.objects.filter(scenario=scn).all()
         serializer = PeriodSerializer(periods,many=True)
         
         return JsonResponse({"periods":serializer.data})
     if request.method == 'POST':
-        
-        serializer = PeriodSerializer(data=request.data)
+        print(request.data)
+        scn = Scenario.objects.filter(scn_id=request.data["scn_id"],version=request.data["scn_version"])[0]
+        data = {
+            "period":request.data["period"],
+            "begin_date":request.data["begin_date"].split("T")[0],
+            "end_date":request.data["end_date"].split("T")[0],
+            "scenario":scn.scn_id
+        }
+        serializer = PeriodSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)

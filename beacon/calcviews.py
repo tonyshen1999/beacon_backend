@@ -18,3 +18,4 @@ def calculate(request):
     e = Entity.objects.get(name="USSH 1")
     a = Account(account_name="test",amount = t.calc(),period = p,scenario=s,entity=e)
     a.save()
+

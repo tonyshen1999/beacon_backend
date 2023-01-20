@@ -1,5 +1,5 @@
 from django.db import models
-
+from datetime import datetime
 
 
 class Scenario(models.Model):
@@ -8,6 +8,11 @@ class Scenario(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=500, blank=True, null=True)
     version = models.IntegerField(default=1)
+    modify_date = models.DateTimeField(
+        default = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        null=True,
+        blank=True
+        )
 
     class Meta:
         unique_together = ("scn_id", "version")
@@ -48,6 +53,7 @@ class Entity(models.Model):
     entity_type = models.CharField(max_length=50)
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
     country = models.ForeignKey(Country,on_delete=models.CASCADE,blank=True,null=True)
+
     class Meta:
         unique_together = ('name', 'scenario')
 
@@ -109,6 +115,7 @@ class Relationship(models.Model):
     child = models.ForeignKey(Entity, related_name='child', on_delete=models.CASCADE)
     ownership_percentage = models.FloatField()
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    period = models.ForeignKey(Period, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.parent.__str__() + " owns " + self.child.__str__()
@@ -118,3 +125,6 @@ class Relationship(models.Model):
     @property
     def child_name(self):
         return self.child.name
+
+
+

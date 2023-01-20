@@ -34,6 +34,8 @@ def importTables(request):
 
     data = request.data["data"]
     scn = Scenario.objects.filter(scn_id=scn_id,version=version)[0]
+    scn.modify_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    scn.save()
     if "Things" in data.keys():
         importEntities(data["Things"],scn)
     if "Relationships" in data.keys():
