@@ -241,7 +241,7 @@ class CFCCalc(EntityCalc):
             self.create_account(account_name="TestedIncome_ETR",amount=tested_income_etr_amt,collection=collect)
 
             
-            tested_interest_expense_amt = self.get("InterestExpenseUtilized").amount
+            tested_interest_expense_amt = self.get(name="InterestExpenseUtilized",collection="Sec163j").amount
             tested_interest_income_amt = self.get("InterestIncomeThirdParty").amount
             # print(hte_met)
             if hte_met == True:
@@ -249,8 +249,14 @@ class CFCCalc(EntityCalc):
                 tested_interest_expense_amt = 0
                 tested_interest_income_amt = 0
 
+            tested_interest_expense_amt = max(tested_interest_expense_amt-tested_loss_qbai_amt,0)
 
+            self.create_account(account_name="TestedInterestIncome",amount=tested_interest_income_amt,collection=collect)
+            self.create_account(account_name="TestedInterestExpense",amount=tested_interest_expense_amt,collection=collect)
 
-
+            tested_income_taxes_amt = self.get("IncomeTaxes").amount
+            if hte_met:
+                tested_income_taxes_amt = 0
+            self.create_account(account_name="TestedIncomeTaxes",amount=tested_income_taxes_amt,collection=collect)
 
             
