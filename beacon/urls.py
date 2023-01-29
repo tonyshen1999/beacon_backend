@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 
-from . import views,calcviews,importviews
+from . import views,calcviews,importviews,functionviews
 from rest_framework import routers
 
 
@@ -33,6 +33,8 @@ urlpatterns = [
     # path("scn/",views.ScenarioListCreateAPIView.as_view()),
     path("scn/",views.scenariosAPI),
     path("scn/<int:pk>",views.ScenarioDetailAPIView.as_view()),
+
+    path("scn/version/",functionviews.new_version),
 
     path("entity/",views.entityAPI),
     path("entity/<int:pk>",views.EntityDetailAPIView.as_view()),

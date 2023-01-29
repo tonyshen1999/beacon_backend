@@ -1,15 +1,15 @@
 import requests
 import json
-endpoint = "http://127.0.0.1:8000/rel/"
+endpoint = "http://127.0.0.1:8000/calc/"
 data ={
-    "parent":230,
-    "child": 240,
-    "ownership_percentage":12.00,
-    "scenario": 1
+    "entity_name":"Ferry Group",
+    "pd_name": "CYE2022",
+    "scn_id":1,
+    "scn_version": 1
 }
 
 requests.post(endpoint,json=data)
 
 
 
-print(requests.get(endpoint,data).json())
+# print(requests.get(endpoint,data).json())

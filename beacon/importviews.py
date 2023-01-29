@@ -91,7 +91,9 @@ def importAccounts(table_data,scn):
         try:
             pd = Period.objects.filter(period=row["Period"].strip(),scenario=scn)[0]
         except:
-            raise Exception(row["Period"] + " is not a defined period")
+
+            pd = Period.objects.filter(scenario=scn)[0].new_period(period=row["Period"])
+            # raise Exception(row["Period"] + " is not a defined period") #this is still allowed. We would just create a new period
         try:
             entity = Entity.objects.filter(name = row["Entity"].strip())[0]
         except:

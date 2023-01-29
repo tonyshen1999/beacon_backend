@@ -1,9 +1,9 @@
 from django.db import models
 from datetime import datetime
-
+import copy
 
 class Scenario(models.Model):
-
+    
     scn_id = models.IntegerField(default=1,primary_key=False)
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=500, blank=True, null=True)
@@ -27,7 +27,40 @@ class Period(models.Model):
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.period
+        return str(self.scenario.scn_id) + "." + str(self.scenario.version) + "," + self.period
+    def get_year(self, period = ""):
+        if period == "":
+            period = self.period
+        return int(period.replace("CYE","").replace("FYE",""))
+    def __add__(self,other):
+        if isinstance(other,int):
+            return self.period.replace(str(self.get_year()),"") + str(self.get_year()+other)
+        else:
+            raise Exception("Can only add integer value to period")
+
+    def __sub__(self,other):
+        if isinstance(other,int):
+            return self.period.replace(str(self.get_year()),"") + str(self.get_year()-other)
+        else:
+            raise Exception("Can only subtract integer value to period")
+
+    class Meta:
+        unique_together = ("period","scenario")
+
+    def new_period(self, period):
+        diff = self.get_year(period) - self.get_year()
+        beg_year = self.begin_date.year + diff
+        end_year = self.end_date.year + diff
+        beg_day = self.begin_date.day
+        end_day = self.end_date.day
+        beg_month = self.begin_date.month
+        end_month = self.end_date.month
+        
+        new_begin_date = str(beg_year)+"-"+str(beg_month)+"-"+str(beg_day)
+        new_end_date = str(end_year)+"-"+str(end_month)+"-"+str(end_day)
+        p = Period(period=period,begin_date=new_begin_date,end_date=new_begin_date,scenario=self.scenario)
+        p.save()
+        print(new_begin_date)
 
 # This should autopopulate when initialized
 class Currency(models.Model):
@@ -58,7 +91,7 @@ class Entity(models.Model):
         unique_together = ('name', 'scenario')
 
     def __str__(self):
-        return self.name
+        return str(self.scenario.scn_id) + "." + str(self.scenario.version) + "," + self.name
 
 class Attribute(models.Model):
     attribute_name = models.CharField(max_length=100)
@@ -67,11 +100,15 @@ class Attribute(models.Model):
     end_date = models.DateField(null=True, blank = True)
     # scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
     entity = models.ForeignKey(Entity,on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('entity','attribute_name')
     def __str__(self):
         return self.attribute_name
     @property
     def entity_name(self):
         return  self.entity.name
+    
 
 
 class Account(models.Model):
@@ -87,9 +124,26 @@ class Account(models.Model):
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('account_name', 'scenario','entity')
+        unique_together = ('account_name', 'scenario','entity','collection')
     def __str__(self):
-        return   self.account_name  + ", " + self.entity.__str__()
+        return   self.account_name  + ", " + self.collection + "," + self.entity.__str__()
+    def apply_adjustments(self):
+       
+        adjustments = Adjustment.objects.filter(account=self)
+        for adj in adjustments:
+            a = Account(
+                account_name = self.account_name,
+                amount = adj.adj_amount,
+                period = self.period,
+                collection = adj.adj_type,
+                acc_class = self.acc_class,
+                currency = self.currency,
+                entity = self.entity,
+                data_type = self.data_type,
+                scenario = self.scenario
+            )
+            a.save()
+        return adjustments
 
 class Adjustment(models.Model):
 
