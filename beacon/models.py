@@ -169,7 +169,7 @@ class Relationship(models.Model):
     child = models.ForeignKey(Entity, related_name='child', on_delete=models.CASCADE)
     ownership_percentage = models.FloatField()
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-    period = models.ForeignKey(Period, on_delete=models.CASCADE, null=True,blank=True)
+    period = models.ForeignKey(Period, on_delete=models.CASCADE, null=True,blank=True)  # Questionable
 
     def __str__(self):
         return self.parent.__str__() + " owns " + self.child.__str__()

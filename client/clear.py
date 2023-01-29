@@ -1,6 +1,6 @@
 import requests
 import json
-endpoint = "http://127.0.0.1:8000/calc/"
+endpoint = "http://127.0.0.1:8000/clear-calc/"
 data ={
     "scn_id":1,
     "scn_version": 1,
@@ -12,7 +12,3 @@ data ={
 }
 
 requests.post(endpoint,json=data)
-
-
-
-# print(requests.get(endpoint,data).json())

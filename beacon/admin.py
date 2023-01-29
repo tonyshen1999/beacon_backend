@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Period,Scenario,Entity,Attribute,Country,Currency,Account, Adjustment
+from .models import Period,Scenario,Entity,Attribute,Country,Currency,Account, Adjustment, Relationship
 
 admin.site.register(Period)
 admin.site.register(Scenario)
@@ -9,3 +9,4 @@ admin.site.register(Country)
 admin.site.register(Currency)
 admin.site.register(Account)
 admin.site.register(Adjustment)
+admin.site.register(Relationship)

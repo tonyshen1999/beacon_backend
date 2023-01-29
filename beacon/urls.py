@@ -54,6 +54,8 @@ urlpatterns = [
 
     path("calc/",calcviews.calculate),
 
+    path("clear-calc/",calcviews.clear_calc),
+
     path("import/",importviews.importTables)
     # url(r'^', include(router.urls)),
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
