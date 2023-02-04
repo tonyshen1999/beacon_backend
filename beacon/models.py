@@ -44,8 +44,8 @@ class Period(models.Model):
         else:
             raise Exception("Can only subtract integer value to period")
 
-    class Meta:
-        unique_together = ("period","scenario")
+    # class Meta:
+    #     unique_together = ("period","scenario")
 
     def new_period(self, period):
         diff = self.get_year(period) - self.get_year()

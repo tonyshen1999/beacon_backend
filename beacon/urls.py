@@ -33,6 +33,7 @@ urlpatterns = [
     # path("scn/",views.ScenarioListCreateAPIView.as_view()),
     path("scn/",views.scenariosAPI),
     path("scn/<int:pk>",views.ScenarioDetailAPIView.as_view()),
+    path("scn-list/",views.scenarioListAPI),
 
     path("scn/version/",functionviews.new_version),
 

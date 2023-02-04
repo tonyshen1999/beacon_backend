@@ -49,6 +49,28 @@ def clear_data(request):
         e.clear_data()
 
     return Response(status=status.HTTP_202_ACCEPTED)
+
+@api_view(['POST'])
+def clear_scenario(request):
+
+    data = request.data
+    scn_id = data["scn_id"]
+    version = data["scn_version"]
+
+    scn = Scenario.objects.get(
+        scn_id = data["scn_id"],
+        version = data["scn_version"]
+    )[0]
+    name = scn.name
+
+    scn.delete()
+    scn_new = Scenario(
+        scn_id = scn_id,
+        name = name,
+        version = 1,
+    )
+    scn_new.save()
+
 def extract_data(request):
 
     data = request.data

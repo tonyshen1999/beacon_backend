@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 from django.http.response import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Max
 text_filters = ['icontains','gt','gte','lt','lte','iexact']
 date_filters = ['range','lt','lte','gt','gte']
 float_filters = ['range','lt','lte','gt','gte','iexact']
@@ -31,6 +32,14 @@ class ScenarioFilter(filters.FilterSet):
             
 
         }
+@api_view(['GET'])
+def scenarioListAPI(request):
+    scn_list = Scenario.objects.all()
+    max_scn = Scenario.objects.values("scn_id","name").annotate(version=Max('version'))
+    print(max_scn)
+    serializer = ScenarioSerializer(max_scn,many=True)
+    
+    return JsonResponse({"scenarios":serializer.data})
 # @csrf_exempt
 @api_view(['GET','POST'])
 def scenariosAPI(request):
@@ -39,8 +48,12 @@ def scenariosAPI(request):
             scenarios = Scenario.objects.all()
             
         else:
-
             scenarios = Scenario.objects.filter(scn_id=request.GET.get("scn_id")).all()
+
+            if request.GET.get("current") is not None and request.GET.get("current").lower() == "true":
+                current_scn = scenarios.aggregate(Max("version"))
+            
+                print(current_scn)
         
         serializer = ScenarioSerializer(scenarios,many=True)
             
@@ -90,13 +103,15 @@ def periodAPI(request):
             "period":request.data["period"],
             "begin_date":request.data["begin_date"].split("T")[0],
             "end_date":request.data["end_date"].split("T")[0],
-            "scenario":scn.scn_id
+            "scenario":scn.pk
         }
+        print(data)
         serializer = PeriodSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
+            print(serializer.errors)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
