@@ -12,6 +12,7 @@ from rest_framework import status
 import json
 from .models import Scenario,Entity,Account,Attribute,Adjustment,Period
 from datetime import datetime
+from .logmodel import ImportLog
 
 table_dict = {
     "things":Entity,
@@ -34,15 +35,19 @@ def importTables(request):
 
     data = request.data["data"]
     scn = Scenario.objects.filter(scn_id=scn_id,version=version)[0]
-    scn.modify_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # scn.modify_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     scn.save()
+
     if "Things" in data.keys():
         importEntities(data["Things"],scn)
+
     if "Relationships" in data.keys():
         importRelationships(data["Relationships"],scn)
-    # print(Entity.objects.filter(name = "Braun, King and Barrows"))
+
     if "Accounts" in data.keys():
         importAccounts(data["Accounts"],scn)
+
+    # Attribute import a little wonky
     if "Attributes" in data.keys():
         importAttributes(data["Attributes"],scn)
         
@@ -52,35 +57,143 @@ def importTables(request):
     
     return Response(request.data,status=status.HTTP_201_CREATED)
 
+def get_row(row,item):
+    if item in row.keys():
+        return row[item]
+    return None
+
 def importEntities(table_data,scn):
     Entity.objects.filter(scenario=scn).all().delete()
     '''
     NOT CURRENTLY USING COUNTRY, ISO CURRENCYY CODE, ETC.
     '''
     for row in table_data:
-        # print(row["Thing"],row["Type"])
-        entity = Entity.objects.create(name=row["Thing"],entity_type=row["Type"],scenario=scn)
-        entity.save()
+        data = {
+            "name":get_row(row,"Thing"),
+            "entity_type":get_row(row,"Type"),
+            "scenario":scn.pk
+        }
+        # print(data)
+        serializer = EntitySerializer(data=data)
+        if serializer.is_valid():
+
+            success_log = ImportLog(
+                log_type = "Entity",
+                name = row["Thing"],
+                status = 0,
+                scenario = scn
+            )
+            success_log.save()
+            serializer.save()
+            # return Response(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            
+            error_log = ImportLog(
+                log_type = "Entity",
+                name = get_row(row,"Thing"),
+                status = 2,
+                scenario = scn,
+                message = serializer.errors
+            )
+            error_log.save()
+            # return Response(status=status.HTTP_400_BAD_REQUEST)
+        # entity = Entity.objects.create(name=row["Thing"],entity_type=row["Type"],scenario=scn)
+        # entity.save()
+
 def importRelationships(table_data,scn):
     Relationship.objects.filter(scenario=scn).all().delete()
 
     for row in table_data:
+        
+        valid = True
         # print(row)
         try:
-            parent = Entity.objects.filter(scenario=scn,name=row["Parent"].strip())[0]
+            parent = Entity.objects.filter(scenario=scn,name=get_row(row,"Parent").strip())[0]
         except:
-            raise Exception(row["Parent"] + " is not a defined entity")
-        try:
-            child = Entity.objects.filter(scenario=scn,name=row["Child"].strip())[0]
-        except:
-            raise Exception(row["Child"] + " is not a defined entity")
-        relationship = Relationship.objects.create(
-            parent=parent,
-            child=child,
-            ownership_percentage=float(row["Ownership Percentage"]),
-            scenario=scn
+            valid = False
+            parent_row = get_row(row,"Parent")
+            if parent_row is None:
+                parent_row = "[Blank]"
+            log = ImportLog(
+                log_type = "Entity",
+                name = parent_row,
+                status = 2,
+                scenario = scn,
+                message = parent_row + " is not a defined entity for 'Parent' in Relationships Table"
             )
-        relationship.save()
+            log.save()
+            # raise Exception(get_row(row,"Parent") + " is not a defined entity")
+        try:
+            child = Entity.objects.filter(scenario=scn,name=get_row(row,"Child").strip())[0]
+            print(child)
+        except:
+            valid = False
+            child_row = get_row(row,"Child")
+            if child_row is None:
+                child_row = "[Blank]"
+
+            log = ImportLog(
+                log_type = "Entity",
+                name = child_row,
+                status = 2,
+                scenario = scn,
+                message = child_row + " is not a defined entity for 'Child' in Relationships Table"
+            )
+            log.save()
+
+
+
+        own_row = get_row(row,"Ownership Percentage")
+        
+        try:
+            own_row = float(own_row)
+        except:
+            valid = False
+            log = ImportLog(
+                log_type = "Relationship Ownership Percentage",
+                name = str(own_row),
+                status = 2,
+                scenario = scn,
+                message = str(own_row) + " must be a float type (format as decimal and NOT Percentage)"
+            )
+            log.save()
+            # raise Exce
+            # raise Exception(get_row(row,"Child")  + " is not a defined entity")
+        # data = {
+        #     "parent":parent,
+        #     "child":child,
+        #     "ownership_percentage":float(get_row(row,"Ownership Percentage")),
+        #     "scenario":scn
+        # }
+        # print(data)
+        # serializer = RelationshipSerializer(data = data)
+        # if serializer.is_valid():
+        #     print("saved at least once")
+        #     serializer.save()
+        # else:
+        #     error_log = ImportLog(
+        #         log_type = "Relationships",
+        #         name = "Parent:" + get_row(row,"Parent") + ", Child: " + get_row(row,"Child"),
+        #         status = 2,
+        #         scenario = scn,
+        #         message = get_row(row,"Child") + " is not a defined entity for 'Child' in Relationships Table"
+        #     )
+        #     error_log.save()
+        if valid:
+            relationship = Relationship.objects.create(
+                parent=parent,
+                child=child,
+                ownership_percentage=float(row["Ownership Percentage"]),
+                scenario=scn
+            )
+            success_log = ImportLog(
+                log_type = "Relationships",
+                name = "Parent:" + get_row(row,"Parent") + ", Child: " + get_row(row,"Child"),
+                status = 0,
+                scenario = scn,
+            )
+            success_log.save()
+            relationship.save()
 
 '''
 NOT CURRENTLY USING CURRENCY, ACCOUNT CLASS, DATA TYPE
@@ -91,25 +204,86 @@ def importAccounts(table_data,scn):
     for row in table_data:
         # print(row['Entity'])
         try:
-            pd = Period.objects.filter(period=row["Period"].strip(),scenario=scn)[0]
+            pd_pk = Period.objects.filter(period=get_row(row,"Period").strip(),scenario=scn)[0].pk
         except:
 
-            pd = Period.objects.filter(scenario=scn)[0].new_period(period=row["Period"])
+            
+            if get_row(row,"Period") is not None and ("FYE" in get_row(row,"Period") or "CYE" in get_row(row,"Period")):
+                pd_pk = Period.objects.filter(scenario=scn)[0].new_period(period=get_row(row,"Period")).pk
+                message_log = ImportLog(
+                    log_type = "Period in Accounts Table",
+                    name = get_row(row,"Period"),
+                    status = 1,
+                    scenario = scn,
+                    message = get_row(row,"Period") + " was not a defined period, so a new period was created. (This could be due\
+                        to finding a PY Carryforward, which won't impact period being calculated)"
+                )
+                message_log.save()
+            else:
+                pd_row = get_row(row,"Period")
+                if pd_row == None:
+                    pd_row = "[Blank]"
+                error_log = ImportLog(
+                    log_type = "Period in Accounts Table",
+                    name = pd_row,
+                    status = 2,
+                    scenario = scn,
+                    message = "Invaid Period Definition"
+                )
+
+                error_log.save()
+                pd_pk = get_row(row,"Period")
+            
             # raise Exception(row["Period"] + " is not a defined period") #this is still allowed. We would just create a new period
         try:
-            entity = Entity.objects.filter(name = row["Entity"].strip())[0]
+            entity_pk = Entity.objects.filter(name = get_row(row,"Entity").strip())[0].pk
         except:
-            raise Exception(row["Entity"] + " is not a defined entity")
-       
-        account = Account.objects.create(
-            account_name = row["Account Name"],
-            amount = float(row["Amount"]),
-            period = pd,
-            collection = row["Collection"],
-            entity = entity,
-            scenario = scn
-        )
-        account.save()
+            entity_pk = get_row(row,"Entity")
+        try:
+            amt = float(get_row(row,"Amount"))
+        except:
+            amt = get_row(row,"Amount")
+        data = {
+            "account_name":get_row(row,"Account Name"),
+            "amount": amt,
+            "period": pd_pk,
+            "collection": get_row(row,"Collection"),
+            "entity" : entity_pk,
+            "scenario" : scn.pk
+        }
+
+        serializer = AccountSerializer(data=data)
+        if serializer.is_valid():
+
+            success_log = ImportLog(
+                log_type = "Account",
+                name = get_row(row,"Account Name"),
+                status = 0,
+                scenario = scn
+            )
+            success_log.save()
+            serializer.save()
+        else :
+            acct_name = get_row(row,"Account Name")
+            if acct_name is None:
+                acct_name = "[Blank]"
+            error_log = ImportLog(
+                log_type = "Account",
+                name = acct_name,
+                status = 2,
+                scenario = scn,
+                message = serializer.errors
+            )
+            error_log.save()
+        # account = Account.objects.create(
+        #     account_name = row["Account Name"],
+        #     amount = float(row["Amount"]),
+        #     period = pd,
+        #     collection = row["Collection"],
+        #     entity = entity,
+        #     scenario = scn
+        # )
+        # account.save()
 
 
 def importAttributes(table_data,scn):
@@ -153,7 +327,7 @@ def importAdjustments(table_data,scn):
                 entity=entity)[0]
         except:
             raise Exception(row["Account Name"] + " is not a defined account")
-
+        
             
        
         adj = Adjustment.objects.create(

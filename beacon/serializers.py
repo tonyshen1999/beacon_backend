@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship
-from .logmodel import Log
+from .logmodel import Log, ImportLog
 
 class PeriodSerializer(serializers.ModelSerializer):
     class Meta:
@@ -107,5 +107,20 @@ class LogSerializer(serializers.ModelSerializer):
             "account",
             "status",
             "message",
+            "log_text",
+            "date_time"
+        ]
+
+class ImportLogSerializer(serializers.ModelSerializer):
+    log_text = serializers.CharField()
+    class Meta:
+        model = ImportLog
+        fields = [
+            "log_type",
+            "name",
+            "message",
+            "status",
+            "date_time",
+            "scenario",
             "log_text"
         ]
