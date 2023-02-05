@@ -14,15 +14,19 @@ import json
 # requests.post(endpoint,json=data)
 
 
-# endpoint = "http://127.0.0.1:8000/pd/"
-# data ={'period': 'CYE2022', 'begin_date': '2022-01-01', 'end_date': '2022-01-01', 'scn_id': '20', 'scn_version': '1'}
+endpoint = "http://127.0.0.1:8000/log/"
+data = {
+    'period': 'CYE2022', 
+    'entity': 'USSH', 
+    'scn_id': '1', 
+    'scn_version': '1'}
 
-# requests.post(endpoint,json=data)
+print(requests.get(endpoint,params=data).json())
 
 
 
-endpoint = "http://127.0.0.1:8000/scn-list/"
+# endpoint = "http://127.0.0.1:8000/scn-list/"
 
-print(requests.get(url=endpoint).json())
+# print(requests.get(url=endpoint).json())
 
 # print(requests.get(endpoint,data).json())

@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 
-from . import views,calcviews,importviews,functionviews
+from . import views,calcviews,importviews,functionviews,logviews
 from rest_framework import routers
 
 
@@ -57,7 +57,12 @@ urlpatterns = [
 
     path("clear-calc/",calcviews.clear_calc),
 
-    path("import/",importviews.importTables)
+    path("import/",importviews.importTables),
+
+    path("log/",logviews.logAPI),
+
+    path("clear-db/",calcviews.clear_db),
+
     # url(r'^', include(router.urls)),
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

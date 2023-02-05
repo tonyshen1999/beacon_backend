@@ -35,6 +35,12 @@ def calculate(request):
 
     return Response(status=status.HTTP_201_CREATED)
 
+
+@api_view(['POST'])
+def clear_db(request):
+    Scenario.objects.all().delete()
+
+
 @api_view(['POST'])
 def clear_calc(request):
     e_list = extract_data(request)

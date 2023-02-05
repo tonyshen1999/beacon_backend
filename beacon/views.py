@@ -34,9 +34,7 @@ class ScenarioFilter(filters.FilterSet):
         }
 @api_view(['GET'])
 def scenarioListAPI(request):
-    scn_list = Scenario.objects.all()
     max_scn = Scenario.objects.values("scn_id","name").annotate(version=Max('version'))
-    print(max_scn)
     serializer = ScenarioSerializer(max_scn,many=True)
     
     return JsonResponse({"scenarios":serializer.data})

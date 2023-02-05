@@ -45,8 +45,10 @@ def importTables(request):
         importAccounts(data["Accounts"],scn)
     if "Attributes" in data.keys():
         importAttributes(data["Attributes"],scn)
+        
     if "Adjustments" in data.keys():
         importAdjustments(data["Adjustments"],scn)
+        # print(data["Adjustments"])
     
     return Response(request.data,status=status.HTTP_201_CREATED)
 
@@ -63,7 +65,7 @@ def importRelationships(table_data,scn):
     Relationship.objects.filter(scenario=scn).all().delete()
 
     for row in table_data:
-        print(row)
+        # print(row)
         try:
             parent = Entity.objects.filter(scenario=scn,name=row["Parent"].strip())[0]
         except:
@@ -109,16 +111,15 @@ def importAccounts(table_data,scn):
         )
         account.save()
 
-# ISSUE WITH THE DATE.
-# STACK TRACE REQUIRED
+
 def importAttributes(table_data,scn):
     Attribute.objects.filter(entity__scenario=scn).all().delete()
     for row in table_data:
         # date = datetime.strptime(row["AttributeStartDate"],"yyyy-mm-dd hh:mm:ss")
-        print(row["AttributeStartDate"].split("T")[0])
+        # print(row["AttributeStartDate"].split("T")[0])
         
         try:
-            entity = Entity.objects.filter(name = row["Entity"].strip())[0]
+            entity = Entity.objects.filter(name = row["Entity"].strip(),scenario=scn)[0]
         except:
             raise Exception(row["Entity"] + " is not a defined entity")
         endDate = None
@@ -140,7 +141,7 @@ def importAdjustments(table_data,scn):
     
     Adjustment.objects.filter(account__scenario=scn).all().delete()
     for row in table_data:
-        print(row)
+        # print(row)
         try:
             entity = Entity.objects.filter(name = row["Entity"].strip())[0]
         except:
@@ -163,5 +164,6 @@ def importAdjustments(table_data,scn):
             adj_percentage = row["Adjustment Percentage"],
             adj_amount = row["Adjustment Amount"]
         )
+        print(adj)
         adj.save()
         

@@ -1,5 +1,5 @@
 from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
-
+from .logmodel import Log
 
 class EntityCalc:
 
@@ -49,6 +49,8 @@ class EntityCalc:
 
         )
         a.save()
+        log = Log(account=a,status=0)
+        log.save()
     
     def set_child(self, child, percent_owned):
         if isinstance(child, EntityCalc):
@@ -70,7 +72,7 @@ class EntityCalc:
                 scenario = self.scenario
             )
             a.save()
-            # Log that nothing was found
+            log = Log(account=a,status=1,message="Account was not found, so new account was created with 0 as amount")
         else:
             a = self.accounts.get(
                 account_name = name,
