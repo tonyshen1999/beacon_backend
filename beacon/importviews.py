@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics
 
 from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer, ImportLogSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from TestModel import TestModel
@@ -32,7 +32,7 @@ def importTables(request):
     
     scn_id = request.data["Scenario"]
     version = request.data["Version"]
-
+    ImportLog.objects.all().delete()
     data = request.data["data"]
     scn = Scenario.objects.filter(scn_id=scn_id,version=version)[0]
     # scn.modify_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -54,13 +54,26 @@ def importTables(request):
     if "Adjustments" in data.keys():
         importAdjustments(data["Adjustments"],scn)
         # print(data["Adjustments"])
+
+
+
+    return_data = {
+        "Success": ImportLogSerializer(ImportLog.objects.filter(status=0),many=True).data,
+        "Message": ImportLogSerializer(ImportLog.objects.filter(status=1),many=True).data,
+        "Errors": ImportLogSerializer(ImportLog.objects.filter(status=2),many=True).data,
+    }
+    print(return_data)
+        
+    return Response(return_data,status=status.HTTP_201_CREATED)
+    # else:
+    #     print(success_serializer.errors)
+    #     return Response({},status=status.HTTP_400_BAD_REQUEST)
     
-    return Response(request.data,status=status.HTTP_201_CREATED)
 
 def get_row(row,item):
     if item in row.keys():
         return row[item]
-    return None
+    return "[Blank]"
 
 def importEntities(table_data,scn):
     Entity.objects.filter(scenario=scn).all().delete()
@@ -68,9 +81,12 @@ def importEntities(table_data,scn):
     NOT CURRENTLY USING COUNTRY, ISO CURRENCYY CODE, ETC.
     '''
     for row in table_data:
+        entity_type = get_row(row,"Type")
+        if entity_type == "[Blank]":
+            entity_type == None
         data = {
             "name":get_row(row,"Thing"),
-            "entity_type":get_row(row,"Type"),
+            "entity_type":entity_type,
             "scenario":scn.pk
         }
         # print(data)
@@ -112,8 +128,6 @@ def importRelationships(table_data,scn):
         except:
             valid = False
             parent_row = get_row(row,"Parent")
-            if parent_row is None:
-                parent_row = "[Blank]"
             log = ImportLog(
                 log_type = "Entity",
                 name = parent_row,
@@ -125,12 +139,10 @@ def importRelationships(table_data,scn):
             # raise Exception(get_row(row,"Parent") + " is not a defined entity")
         try:
             child = Entity.objects.filter(scenario=scn,name=get_row(row,"Child").strip())[0]
-            print(child)
+            # print(child)
         except:
             valid = False
             child_row = get_row(row,"Child")
-            if child_row is None:
-                child_row = "[Blank]"
 
             log = ImportLog(
                 log_type = "Entity",
@@ -221,8 +233,7 @@ def importAccounts(table_data,scn):
                 message_log.save()
             else:
                 pd_row = get_row(row,"Period")
-                if pd_row == None:
-                    pd_row = "[Blank]"
+
                 error_log = ImportLog(
                     log_type = "Period in Accounts Table",
                     name = pd_row,
@@ -257,7 +268,7 @@ def importAccounts(table_data,scn):
 
             success_log = ImportLog(
                 log_type = "Account",
-                name = get_row(row,"Account Name"),
+                name = get_row(row,"Account Name") + " for entity " + get_row(row,"Entity"),
                 status = 0,
                 scenario = scn
             )
@@ -265,8 +276,7 @@ def importAccounts(table_data,scn):
             serializer.save()
         else :
             acct_name = get_row(row,"Account Name")
-            if acct_name is None:
-                acct_name = "[Blank]"
+
             error_log = ImportLog(
                 log_type = "Account",
                 name = acct_name,
@@ -314,30 +324,100 @@ NEED TO INCLUDE ADJUSTMENT COLLECTION
 def importAdjustments(table_data,scn):
     
     Adjustment.objects.filter(account__scenario=scn).all().delete()
+
     for row in table_data:
+        valid = True
         # print(row)
+        acc_name = get_row(row,"Account Name")
+        entity_name = get_row(row,"Entity")
+        
         try:
-            entity = Entity.objects.filter(name = row["Entity"].strip())[0]
-        except:
-            raise Exception(row["Entity"] + " is not a defined entity")
+            entity = Entity.objects.filter(name = entity_name.strip())[0]
+        except Exception as e:
+            error_log = ImportLog(
+                log_type = "Adjustment",
+                name = "<" + adj_type + "> type adjustment for  " + acc_name + " account, entity <" + entity_name +">",
+                status = 2,
+                scenario = scn,
+                message = str(e)
+            )
+            valid = False
+            error_log.save()
         try:
             acc = Account.objects.filter(
-                account_name=row["Account Name"].strip(),
+                account_name=acc_name.strip(),
                 scenario=scn,
                 entity=entity)[0]
-        except:
-            raise Exception(row["Account Name"] + " is not a defined account")
-        
-            
-       
-        adj = Adjustment.objects.create(
-            account = acc,
-            adj_type = row["Adjustment Type"],
-           
-            adj_class = row["Adjustment Class"],
-            adj_percentage = row["Adjustment Percentage"],
-            adj_amount = row["Adjustment Amount"]
-        )
-        print(adj)
-        adj.save()
+        except Exception as e:
+            error_log = ImportLog(
+                log_type = "Adjustment",
+                name = "<" + adj_type + "> type adjustment for  " + acc_name + " account",
+                status = 2,
+                scenario = scn,
+                message = str(e)
+            )
+            valid = False
+            error_log.save()
+
+        adj_type = get_row(row,"Adjustment Type")
+        adj_class = get_row(row,"Adjustment Class")
+        try:
+            adj_percentage = float(get_row(row,"Adjustment Percentage"))
+            adj_amount = float(get_row(row,"Adjustment Amount"))
+        except Exception as e:
+            error_log = ImportLog(
+                log_type = "Adjustment",
+                name = adj_type + " type adjustment for  " + acc_name + " account",
+                status = 2,
+                scenario = scn,
+                message = str(e)
+            )
+            valid = False
+            error_log.save()
+        # data = {
+        #     "account_id":acc.pk,
+        #     "adj_type": adj_type,
+        #     "adj_class": adj_class,
+        #     "adj_percentage": adj_percentage,
+        #     "adj_amount": adj_amount
+        # }
+        # print(data)
+        # serializer = AdjustmentSerializer(data=data)
+        # if serializer.is_valid():
+
+        #     success_log = ImportLog(
+        #         log_type = "Adjustment",
+        #         name = "<" + adj_type + "> type adjustment for  " + acc_name + " account, " + "<" + entity_name + ">",
+        #         status = 0,
+        #         scenario = scn
+        #     )
+        #     success_log.save()
+        #     serializer.save()
+        # else :
+
+        #     error_log = ImportLog(
+        #         log_type = "Adjustment",
+        #         name = "<" + adj_type + "> type adjustment for  " + acc_name + " account",
+        #         status = 2,
+        #         scenario = scn,
+        #         message = serializer.errors
+        #     )
+        #     error_log.save()
+        if valid:
+            adj = Adjustment.objects.create(
+                account = acc,
+                adj_type = adj_type,
+                adj_class = adj_class,
+                adj_percentage = adj_percentage,
+                adj_amount = adj_amount
+            )
+            success_log = ImportLog(
+                log_type = "Adjustment",
+                name = adj_type + " type adjustment for  " + acc_name + " account, " + "[" + entity_name + "]",
+                status = 0,
+                scenario = scn
+            )
+            success_log.save()
+
+            adj.save()
         

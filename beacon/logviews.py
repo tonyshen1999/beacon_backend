@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import generics,viewsets
 
 from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
-from .logmodel import Log
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer,RelationshipSerializer, LogSerializer
+from .logmodel import Log, ImportLog
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer,RelationshipSerializer, LogSerializer, ImportLogSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from django.views.decorators.csrf import csrf_exempt
@@ -40,3 +40,12 @@ def logAPI(request):
     serializer = LogSerializer(logs,many=True)
 
     return JsonResponse({"logs":serializer.data})
+@api_view(['GET'])
+def importLogAPI(request):
+    return_data = {
+        "Success": ImportLogSerializer(ImportLog.objects.filter(status=0),many=True).data,
+        "Message": ImportLogSerializer(ImportLog.objects.filter(status=1),many=True).data,
+        "Errors": ImportLogSerializer(ImportLog.objects.filter(status=2),many=True).data,
+    }
+    return JsonResponse(return_data)
+        

@@ -43,6 +43,7 @@ def clear_db(request):
 
 @api_view(['POST'])
 def clear_calc(request):
+    print("234234234234",request.data)
     e_list = extract_data(request)
     for e in e_list:
         e.clear_calc()
@@ -50,6 +51,7 @@ def clear_calc(request):
 
 @api_view(['POST'])
 def clear_data(request):
+    print("234234234234234234234234",request.data)
     e_list = extract_data(request)
     for e in e_list:
         e.clear_data()
@@ -87,37 +89,45 @@ def extract_data(request):
         scn_id = data["scn_id"],
         version = data["scn_version"]
     )[0]
+  
+      
     relationships = Relationship.objects.filter(scenario = scn)
     entity_list = []
+    if "entities" in data:
+        for x in data["entities"]:
 
-    for x in data["entities"]:
+            entity = Entity.objects.filter(
+                name = x["entity_name"],
+                scenario = scn
+            )[0]
 
-        entity = Entity.objects.filter(
-            name = x["entity_name"],
-            scenario = scn
-        )[0]
+            period = Period.objects.filter(
+                period = x["pd_name"],
+                scenario = scn
+            )[0]
 
-        period = Period.objects.filter(
-            period = x["pd_name"],
-            scenario = scn
-        )[0]
+            # e is type CFC Calc
+            
+            e = create_entity_calc(entity,period)
+            
+            children_rel = relationships.filter(parent=entity)
+            if children_rel.count() > 0:
+                for r in children_rel:
+                    c = create_entity_calc(r.child,period)
+                    e.set_child(child=c,percent_owned=r.ownership_percentage)
+                    if c not in entity_list:
+                        entity_list.append(c)
 
-        # e is type CFC Calc
-        
-        e = create_entity_calc(entity,period)
-        
-        children_rel = relationships.filter(parent=entity)
-        if children_rel.count() > 0:
-            for r in children_rel:
-                c = create_entity_calc(r.child,period)
-                e.set_child(child=c,percent_owned=r.ownership_percentage)
-                if c not in entity_list:
-                    entity_list.append(c)
-
-        entity_list.append(e)
-    
-
-
+            entity_list.append(e)
+    elif "pd" in data:
+        pd = Period.objects.get(scenario=scn,period=data["pd"])
+        all_entities = Entity.objects.filter(scenario=scn)
+        for x in all_entities:
+            e = create_entity_calc(x,pd)
+            entity_list.append(e)
+    else:
+        pass
+        # exception handling
     return entity_list
 
 def create_entity_calc(entity, period):
