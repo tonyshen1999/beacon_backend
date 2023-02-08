@@ -1,4 +1,4 @@
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, Calculation
 from .logmodel import Log
 
 class EntityCalc:
@@ -7,7 +7,7 @@ class EntityCalc:
     ********** HELPER METHODS ***************
     '''
 
-    def __init__(self, entity, period):
+    def __init__(self, entity, period, calc_model = Calculation()):
         self.entity = entity
         self.period = period
         self.attributes = Attribute.objects.filter(entity = self.entity)
@@ -16,7 +16,7 @@ class EntityCalc:
         self.calculated = False
         self.children = {}
         self.parents = {}
-
+        self.calc_model = calc_model
 
     def __str__(self):
         return self.entity.__str__() + ", " + self.period.__str__() + ", " + self.scenario.__str__() +", Num children:" + str(len(self.children.keys()))
@@ -49,7 +49,7 @@ class EntityCalc:
 
         )
         a.save()
-        log = Log(account=a,status=0)
+        log = Log(account=a,status=0,calculation = self.calc_model)
         log.save()
     
     def set_child(self, child, percent_owned):
@@ -201,8 +201,8 @@ class EntityCalc:
 
 class CFCCalc(EntityCalc):
 
-    def __init__(self, entity, period):
-        super().__init__(entity,period)
+    def __init__(self, entity, period, calc_model=Calculation()):
+        super().__init__(entity,period, calc_model)
 
     def calculate(self):
         if self.calculated == False:
@@ -272,8 +272,8 @@ class CFCCalc(EntityCalc):
 
 class USSHCalc(EntityCalc):
     
-    def __init__(self, entity, period):
-        super().__init__(entity,period)
+    def __init__(self, entity, period, calc_model = Calculation()):
+        super().__init__(entity,period, calc_model)
 
     def calculate(self):
         if self.calculated == False:

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, Calculation
 from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
@@ -25,6 +25,8 @@ def calculate(request):
 
 }
     '''
+
+
     data = request.data
 
     e_list = extract_data(request)
@@ -34,6 +36,7 @@ def calculate(request):
 
 
     return Response(status=status.HTTP_201_CREATED)
+
 
 
 @api_view(['POST'])
@@ -81,6 +84,7 @@ def clear_scenario(request):
 
 def extract_data(request):
 
+
     data = request.data
     scn_id = data["scn_id"]
     version = data["scn_version"]
@@ -89,7 +93,8 @@ def extract_data(request):
         scn_id = data["scn_id"],
         version = data["scn_version"]
     )[0]
-  
+    calc_model = Calculation(scenario=scn)
+    calc_model.save()
       
     relationships = Relationship.objects.filter(scenario = scn)
     entity_list = []
@@ -108,12 +113,12 @@ def extract_data(request):
 
             # e is type CFC Calc
             
-            e = create_entity_calc(entity,period)
+            e = create_entity_calc(entity,period, calc_model)
             
             children_rel = relationships.filter(parent=entity)
             if children_rel.count() > 0:
                 for r in children_rel:
-                    c = create_entity_calc(r.child,period)
+                    c = create_entity_calc(r.child,period, calc_model)
                     e.set_child(child=c,percent_owned=r.ownership_percentage)
                     if c not in entity_list:
                         entity_list.append(c)
@@ -130,13 +135,13 @@ def extract_data(request):
         # exception handling
     return entity_list
 
-def create_entity_calc(entity, period):
+def create_entity_calc(entity, period, calc_model=None):
     if entity.entity_type == "CFC":
-        e = CFCCalc(entity,period)
+        e = CFCCalc(entity,period, calc_model)
     elif entity.entity_type == "USSH":
-        e = USSHCalc(entity,period)
+        e = USSHCalc(entity,period, calc_model)
     else:
-        e = EntityCalc(entity,period)
+        e = EntityCalc(entity,period, calc_model)
     
     return e
 

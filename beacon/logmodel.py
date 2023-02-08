@@ -7,7 +7,7 @@ To be replaced with Django websocket
 from django.db import models
 from datetime import datetime
 import copy
-from .models import Account, Scenario, Period
+from .models import Account, Scenario, Period, Calculation
 
 
 class Log(models.Model):
@@ -24,7 +24,9 @@ class Log(models.Model):
     account = models.ForeignKey(Account,on_delete = models.CASCADE,blank = True, null = True)
     status = models.IntegerField(default=0,primary_key=False)
     message = models.TextField(null=True,blank=True)
-    date_time = models.DateTimeField(auto_now_add=True)
+    date_time = models.DateTimeField(auto_now=True)
+    calculation = models.ForeignKey(Calculation,on_delete=models.CASCADE)
+
     @property
     def log_text(self):
         message = ""
@@ -47,7 +49,7 @@ class ImportLog(models.Model):
     name = models.CharField(max_length=50)
     message  = models.TextField(null=True,blank=True)
     status = models.IntegerField(default=0,primary_key=False)
-    date_time = models.DateTimeField(auto_now_add=True, blank=True, null = True)
+    date_time = models.DateTimeField(auto_now=True, blank=True, null = True)
     scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
     
     @property

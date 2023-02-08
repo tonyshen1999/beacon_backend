@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship
+from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship, Calculation
 from .logmodel import Log, ImportLog
 
 class PeriodSerializer(serializers.ModelSerializer):
@@ -80,7 +80,13 @@ class AccountSerializer(serializers.ModelSerializer):
             "data_type",
             "scenario",
         ]
-
+class Calculation(serializers.ModelSerializer):
+    class Meta:
+        model = Calculation
+        fields = [
+            "scenario",
+            "date_time"
+        ]
 class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency

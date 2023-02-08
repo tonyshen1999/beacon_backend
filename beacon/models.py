@@ -145,6 +145,10 @@ class Account(models.Model):
             a.save()
         return adjustments
 
+class Calculation(models.Model):
+    date_time = models.DateTimeField(auto_now=True, blank=True, null = True)
+    scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
+    
 class Adjustment(models.Model):
 
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
