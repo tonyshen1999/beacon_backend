@@ -7,7 +7,7 @@ class EntityCalc:
     ********** HELPER METHODS ***************
     '''
 
-    def __init__(self, entity, period, calc_model = Calculation()):
+    def __init__(self, entity, period, calc_model = None):
         self.entity = entity
         self.period = period
         self.attributes = Attribute.objects.filter(entity = self.entity)
@@ -17,6 +17,8 @@ class EntityCalc:
         self.children = {}
         self.parents = {}
         self.calc_model = calc_model
+        
+        
 
     def __str__(self):
         return self.entity.__str__() + ", " + self.period.__str__() + ", " + self.scenario.__str__() +", Num children:" + str(len(self.children.keys()))
@@ -63,6 +65,7 @@ class EntityCalc:
     def get(self,name, collection = "TBFC"):
         # print(name,self.contains_account(name))
         if self.contains_account(name, collection) == False:
+            
             a = Account(
                 account_name = name,
                 entity=self.entity,
@@ -72,13 +75,15 @@ class EntityCalc:
                 scenario = self.scenario
             )
             a.save()
-            log = Log(account=a,status=1,message="Account was not found, so new account was created with 0 as amount")
+            log = Log(account=a,status=1,message="Account was not found, so new account was created with 0 as amount",calculation=self.calc_model)
+            log.save()
+            
+
         else:
             a = self.accounts.get(
                 account_name = name,
                 collection = collection
             )
-        # print(a)
         return a
     
 
@@ -210,6 +215,7 @@ class CFCCalc(EntityCalc):
             self.sec163j()
             self.CFC_tested_income()
             self.calculated = True
+        
     
     def CFC_tested_income(self):
         if self.contains_account("TentativeTestedIncomeBeforeTaxes") == False:
@@ -280,6 +286,7 @@ class USSHCalc(EntityCalc):
             self.clear_calc()
             self.USSH951A()
             self.calculated = True
+        
         
     def USSH951A(self):
         agg_cfc_tested_income_amt = 0

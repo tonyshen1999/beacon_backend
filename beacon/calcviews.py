@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics
 
 from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, Calculation
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer, LogSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from TestModel import TestModel
@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .entitycalc import EntityCalc, CFCCalc, USSHCalc
+from .logmodel import Log
 
 @api_view(['POST'])
 def calculate(request):
@@ -25,17 +26,34 @@ def calculate(request):
 
 }
     '''
-
+    data = request.data
+    scn_id = data["scn_id"]
+    version = data["scn_version"]
+    # print(data)
+    scn = Scenario.objects.filter(
+        scn_id = data["scn_id"],
+        version = data["scn_version"]
+    )[0]
 
     data = request.data
+    calc_model = Calculation(scenario=scn)
+    calc_model.save()
 
-    e_list = extract_data(request)
+    e_list = extract_data(request,calc_model)
     
     for e in e_list:
         e.calculate()
 
+    return_data = {
+        "Success": LogSerializer(Log.objects.filter(status=0,calculation=calc_model),many=True).data,
+        "Message": LogSerializer(Log.objects.filter(status=1,calculation=calc_model),many=True).data,
+        "Errors": LogSerializer(Log.objects.filter(status=2,calculation=calc_model),many=True).data,
+    }
 
-    return Response(status=status.HTTP_201_CREATED)
+    # print(return_data)
+
+
+    return Response(return_data,status=status.HTTP_201_CREATED)
 
 
 
@@ -46,18 +64,37 @@ def clear_db(request):
 
 @api_view(['POST'])
 def clear_calc(request):
-    print("234234234234",request.data)
-    e_list = extract_data(request)
-    for e in e_list:
-        e.clear_calc()
+
+    data = request.data
+    scn_id = data["scn_id"]
+    version = data["scn_version"]
+
+    scn = Scenario.objects.filter(
+        scn_id = data["scn_id"],
+        version = data["scn_version"]
+    )[0]
+
+    accounts = Account.objects.filter(entity__scenario = scn)
+    accounts.exclude(collection="TBFC").delete()
+
+
     return Response(status=status.HTTP_202_ACCEPTED)
 
 @api_view(['POST'])
 def clear_data(request):
-    print("234234234234234234234234",request.data)
-    e_list = extract_data(request)
-    for e in e_list:
-        e.clear_data()
+    
+    data = request.data
+    scn_id = data["scn_id"]
+    version = data["scn_version"]
+
+    scn = Scenario.objects.filter(
+        scn_id = data["scn_id"],
+        version = data["scn_version"]
+    )[0]
+
+    accounts = Account.objects.filter(entity__scenario = scn)
+    accounts.delete()
+
 
     return Response(status=status.HTTP_202_ACCEPTED)
 
@@ -82,19 +119,19 @@ def clear_scenario(request):
     )
     scn_new.save()
 
-def extract_data(request):
+def extract_data(request, calc_model):
 
 
     data = request.data
-    scn_id = data["scn_id"]
-    version = data["scn_version"]
+    # scn_id = data["scn_id"]
+    # version = data["scn_version"]
 
-    scn = Scenario.objects.filter(
-        scn_id = data["scn_id"],
-        version = data["scn_version"]
-    )[0]
-    calc_model = Calculation(scenario=scn)
-    calc_model.save()
+    # scn = Scenario.objects.filter(
+    #     scn_id = data["scn_id"],
+    #     version = data["scn_version"]
+    # )[0]
+    scn = calc_model.scenario
+    
       
     relationships = Relationship.objects.filter(scenario = scn)
     entity_list = []
@@ -105,16 +142,18 @@ def extract_data(request):
                 name = x["entity_name"],
                 scenario = scn
             )[0]
-
+            
             period = Period.objects.filter(
                 period = x["pd_name"],
                 scenario = scn
             )[0]
 
             # e is type CFC Calc
+            accounts = Account.objects.filter(entity=entity)
+            print(accounts)
             
             e = create_entity_calc(entity,period, calc_model)
-            
+            # print(e)
             children_rel = relationships.filter(parent=entity)
             if children_rel.count() > 0:
                 for r in children_rel:

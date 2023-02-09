@@ -29,7 +29,7 @@ VERY IMPORTANT HANDLE SPACES AND NEW LINES IN INPUT DATA
 
 @api_view(['POST'])
 def importTables(request):
-    
+    # print(request.data)
     scn_id = request.data["Scenario"]
     version = request.data["Version"]
     ImportLog.objects.all().delete()
@@ -62,7 +62,7 @@ def importTables(request):
         "Message": ImportLogSerializer(ImportLog.objects.filter(status=1),many=True).data,
         "Errors": ImportLogSerializer(ImportLog.objects.filter(status=2),many=True).data,
     }
-    print(return_data)
+    # print(return_data)
         
     return Response(return_data,status=status.HTTP_201_CREATED)
     # else:
@@ -247,7 +247,8 @@ def importAccounts(table_data,scn):
             
             # raise Exception(row["Period"] + " is not a defined period") #this is still allowed. We would just create a new period
         try:
-            entity_pk = Entity.objects.filter(name = get_row(row,"Entity").strip())[0].pk
+            entity_pk = Entity.objects.filter(name = get_row(row,"Entity").strip(), scenario=scn)[0].pk
+            
         except:
             entity_pk = get_row(row,"Entity")
         try:
@@ -330,9 +331,10 @@ def importAdjustments(table_data,scn):
         # print(row)
         acc_name = get_row(row,"Account Name")
         entity_name = get_row(row,"Entity")
-        
+        adj_type = get_row(row,"Adjustment Type")
+        adj_class = get_row(row,"Adjustment Class")
         try:
-            entity = Entity.objects.filter(name = entity_name.strip())[0]
+            entity = Entity.objects.filter(name = entity_name.strip(),scenario=scn)[0]
         except Exception as e:
             error_log = ImportLog(
                 log_type = "Adjustment",
@@ -359,8 +361,7 @@ def importAdjustments(table_data,scn):
             valid = False
             error_log.save()
 
-        adj_type = get_row(row,"Adjustment Type")
-        adj_class = get_row(row,"Adjustment Class")
+
         try:
             adj_percentage = float(get_row(row,"Adjustment Percentage"))
             adj_amount = float(get_row(row,"Adjustment Amount"))
