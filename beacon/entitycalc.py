@@ -17,6 +17,8 @@ class EntityCalc:
         self.children = {}
         self.parents = {}
         self.calc_model = calc_model
+
+        # print(self.accounts)
         
         
 
@@ -38,6 +40,14 @@ class EntityCalc:
         currency = None,
         data_type = 0):
 
+        # print(
+        # account_name,
+        # amount,
+        # collection, 
+        # acc_class, 
+        # currency,
+        # data_type)
+
         a = Account(
             account_name = account_name,
             amount = amount,
@@ -50,7 +60,9 @@ class EntityCalc:
             data_type = data_type
 
         )
+       
         a.save()
+        # print(a.scenario,a.entity,a)
         log = Log(account=a,status=0,calculation = self.calc_model)
         log.save()
     
@@ -88,6 +100,7 @@ class EntityCalc:
     
 
     def get_accounts(self):
+        # print(Account.objects.filter(entity=self.entity,period=self.period))
         return Account.objects.filter(entity = self.entity, period = self.period)
 
     def clear_calc(self):

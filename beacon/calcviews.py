@@ -34,7 +34,7 @@ def calculate(request):
         scn_id = data["scn_id"],
         version = data["scn_version"]
     )[0]
-
+    print(scn)
     data = request.data
     calc_model = Calculation(scenario=scn)
     calc_model.save()
@@ -131,6 +131,7 @@ def extract_data(request, calc_model):
     #     version = data["scn_version"]
     # )[0]
     scn = calc_model.scenario
+    print(scn)
     
       
     relationships = Relationship.objects.filter(scenario = scn)
@@ -150,7 +151,7 @@ def extract_data(request, calc_model):
 
             # e is type CFC Calc
             accounts = Account.objects.filter(entity=entity)
-            print(accounts)
+            # print(accounts)
             
             e = create_entity_calc(entity,period, calc_model)
             # print(e)

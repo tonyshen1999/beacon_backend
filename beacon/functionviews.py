@@ -24,30 +24,11 @@ def new_version(request):
     data = request.data
     current = Scenario.objects.filter(scn_id=data["scn_id"]).order_by('-version')[0]
     new_scenario = copy.deepcopy(current)
-    new_scenario.pk=None
+    new_scenario.pk = None
     new_scenario.version = current.version+1
     new_scenario.save()
-
-    # create a private function to stop repetition
-    entities = Entity.objects.filter(scenario=current)
-    for e in entities:
-        e.pk = None
-        e.scenario = new_scenario
-        e.save()
     accounts = Account.objects.filter(scenario=current)
-    for a in accounts:
-        adjustments = Adjustment.objects.filter(account = a)
 
-        a.pk = None
-        a.scenario = new_scenario
-        a.save()
-        for adj in adjustments:
-            adj.pk = None
-            adj.account = a
-            adj.save()
-
-
-    
     periods = Period.objects.filter(scenario=current)
     for p in periods:
         p.pk = None
@@ -59,6 +40,50 @@ def new_version(request):
         r.pk = None
         r.scenario = new_scenario
         r.save()
+    # create a private function to stop repetition
+    entities = Entity.objects.filter(scenario=current)
+    for e in entities:
+        atrs = Attribute.objects.filter(entity=e).all()
+        entity_accounts = accounts.filter(entity=e)
+        relationship_parent = Relationship.objects.filter(parent=e)
+
+
+
+        relationship_child = Relationship.objects.filter(child=e)
+
+
+        e.pk = None
+        e.scenario = new_scenario
+        e.save()
+        if relationship_parent.count() > 0:
+            relationship_parent[0].parent = e
+        if relationship_child.count() > 0:
+            relationship_child[0].child = e
+        # print(e)
+        for atr in atrs:
+            atr.pk = None
+            atr.entity = e
+            atr.save()
+
+        
+
+        for a in entity_accounts:
+            adjustments = Adjustment.objects.filter(account = a)
+            old_period = a.period
+            new_period = Period.objects.get(period=old_period.period,scenario=new_scenario)
+            a.pk = None
+            a.entity = e
+            a.scenario = new_scenario
+            a.period=new_period
+            a.save()
+            # print(a.entity)
+            for adj in adjustments:
+                adj.pk = None
+                adj.account = a
+                adj.save()
+
+
     
+
 
     return Response(status=status.HTTP_201_CREATED)
