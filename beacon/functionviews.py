@@ -22,10 +22,12 @@ def new_version(request):
     ''' Duplicate a scenario and increment the version.
     '''
     data = request.data
+    print(data)
     current = Scenario.objects.filter(scn_id=data["scn_id"]).order_by('-version')[0]
     new_scenario = copy.deepcopy(current)
     new_scenario.pk = None
     new_scenario.version = current.version+1
+    new_scenario.description = data["description"]
     new_scenario.save()
     accounts = Account.objects.filter(scenario=current)
 

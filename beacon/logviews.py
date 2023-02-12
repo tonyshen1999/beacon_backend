@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics,viewsets
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, Calculation
 from .logmodel import Log, ImportLog
 from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer,RelationshipSerializer, LogSerializer, ImportLogSerializer
 from django_filters import rest_framework as filters
@@ -40,6 +40,28 @@ def logAPI(request):
     serializer = LogSerializer(logs,many=True)
 
     return JsonResponse({"logs":serializer.data})
+
+@api_view(['GET'])
+def calcLogListAPI(request):
+
+    scn_id = request.GET.get("scn_id")
+    scn_version = request.GET.get("scn_version")
+    scn = Scenario.objects.get(scn_id=scn_id,version=scn_version)
+
+
+
+    calc_logs = Calculation.objects.filter(scenario = scn).all()
+    data = {}
+
+    for c in calc_logs:
+        data[str(c.date_time)] = LogSerializer(Log.objects.filter(calculation=c).all(),many=True).data
+    
+    # for l in data.keys():
+    #     print("date:" + str(l))
+    #     print(data[l])
+
+    return JsonResponse(data)
+
 @api_view(['GET'])
 def importLogAPI(request):
     return_data = {

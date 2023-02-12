@@ -54,10 +54,12 @@ urlpatterns = [
     path("rel/<int:pk>",views.AdjustmentDetailAPIView.as_view()),
 
     path("calc/",calcviews.calculate),
-
+    path("calc-script/",calcviews.calc_script),
     path("clear-calc/",calcviews.clear_calc),
     path("clear-data/",calcviews.clear_data),   
     path("import/",importviews.importTables),
+
+    path("calc-log-list/",logviews.calcLogListAPI),
 
     path("import-log/",logviews.importLogAPI),
 

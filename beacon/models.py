@@ -125,8 +125,16 @@ class Account(models.Model):
 
     class Meta:
         unique_together = ('account_name', 'scenario','entity','collection')
+    @property
+    def entity_name(self):
+        return self.entity.name
+    @property
+    def period_name(self):
+        return self.period.period
+    
     def __str__(self):
         return   self.account_name  + ", " + self.collection + "," + self.entity.__str__()
+    
     def apply_adjustments(self):
        
         adjustments = Adjustment.objects.filter(account=self)
@@ -166,6 +174,9 @@ class Adjustment(models.Model):
     @property
     def entity(self):
         return self.account.entity.name
+    @property
+    def period(self):
+        return self.account.period.period
 
 class Relationship(models.Model):
 
@@ -184,5 +195,18 @@ class Relationship(models.Model):
     def child_name(self):
         return self.child.name
 
+class CalcAction(models.Model):
+
+    entity = models.ForeignKey(Entity,on_delete=models.CASCADE)
+    period = models.ForeignKey(Period, on_delete=models.CASCADE)
+    action = models.CharField(max_length=50)
+
+    @property
+    def entity_name(self):
+        return self.entity.name
+        
+    @property
+    def period_name(self):
+        return self.period.period
 
 

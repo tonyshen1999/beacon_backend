@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship, Calculation
+from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship, Calculation, CalcAction
 from .logmodel import Log, ImportLog
 
 class PeriodSerializer(serializers.ModelSerializer):
@@ -44,13 +44,13 @@ class RelationshipSerializer(serializers.ModelSerializer):
 class EntitySerializer(serializers.ModelSerializer):
     relationships = RelationshipSerializer
     attributes=AttributeSerializer
+    
     class Meta:
         model = Entity
         fields = [
             "name",
             "entity_type",
             "country",
-            "scenario"
         ]
 class AdjustmentSerializer(serializers.ModelSerializer):
     
@@ -58,12 +58,13 @@ class AdjustmentSerializer(serializers.ModelSerializer):
         model = Adjustment
         fields = [
             "account_name",
+            "period",
             "entity",
             "adj_type",
             "adj_collection",
             "adj_class",
             "adj_percentage",
-            "adj_amount"
+            "adj_amount",
         ]
 class AccountSerializer(serializers.ModelSerializer):
     adjustments = AdjustmentSerializer
@@ -72,13 +73,11 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = [
             "account_name",
             "amount",
-            "period",
+            "period_name",
             "collection",
             "acc_class",
             "currency",
-            "entity",
-            "data_type",
-            "scenario",
+            "entity_name",
         ]
 class Calculation(serializers.ModelSerializer):
     class Meta:
@@ -129,4 +128,12 @@ class ImportLogSerializer(serializers.ModelSerializer):
             "date_time",
             "scenario",
             "log_text"
+        ]
+class CalcActionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CalcAction
+        fields = [
+            "entity_name",
+            "period_name",
+            "action"
         ]

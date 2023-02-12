@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, Calculation
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer, LogSerializer
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, Calculation, CalcAction
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer, LogSerializer, CalcActionSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from TestModel import TestModel
@@ -11,6 +11,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from .entitycalc import EntityCalc, CFCCalc, USSHCalc
 from .logmodel import Log
+
+
+'''
+Create a function for pulling scenario lol
+'''
+
 
 @api_view(['POST'])
 def calculate(request):
@@ -55,11 +61,61 @@ def calculate(request):
 
     return Response(return_data,status=status.HTTP_201_CREATED)
 
+# To sort by child and parent
+@api_view(['GET'])
+def calc_script(request):
+    CalcAction.objects.all().delete()
+    
+
+    scn_id = request.GET.get("scn_id")
+    version = request.GET.get("version")
+    # print(data)
+    scn = Scenario.objects.filter(
+        scn_id = scn_id,
+        version = version
+    )[0]
+
+    periods = Period.objects.filter(scenario=scn).all()
+    print(periods)
+
+    for p in periods:
+        rels = Relationship.objects.filter(scenario=scn).all()
+        children = set()
+        parents = set()
+        for e in rels:
+            children.add(e.child)
+            parents.add(e.parent)
+        
+        children = list(children)
+        children.extend(list(parents))
+
+        for c in children:
+            ca = CalcAction(
+                entity = c,
+                period = p,
+                action = get_entity_action(c)
+                )
+
+            ca.save()
+    return Response({"calc_script":CalcActionSerializer(CalcAction.objects.all(),many=True).data})
+
+def get_entity_action(entity):
+
+    if entity.entity_type == "USSH":
+        return "USSH951A"
+    elif entity.entity_type == "CFC":
+        return "Tested Income and EP"
+    elif entity.entity_type == "DRE":
+        return "EP"
+    else:
+        return ""
+
 
 
 @api_view(['POST'])
 def clear_db(request):
     Scenario.objects.all().delete()
+    
 
 
 @api_view(['POST'])
