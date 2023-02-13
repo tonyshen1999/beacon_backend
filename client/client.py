@@ -50,12 +50,22 @@ import json
 
 # print(requests.get(endpoint,params=data).json())
 
-endpoint = "http://127.0.0.1:8000/calc-script/"
+endpoint = "http://127.0.0.1:8000/scn-notes/"
 data ={
     "scn_id":90,
-    "version": 1,
-    "period": "CYE2022"
+    "version": 4,
+    "description": "test if this shit updated"
 
 }
 
-print(requests.get(endpoint,params=data).json())
+print(requests.put(endpoint,params=data).json())
+
+get_data ={
+    "scn_id":90,
+    "version": 4,
+    "description": "test if this shit updated"
+
+}
+
+print(requests.get(endpoint,params=get_data).json())
+

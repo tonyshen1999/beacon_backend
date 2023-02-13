@@ -13,6 +13,7 @@ import json
 from .models import Scenario,Entity,Account,Attribute,Adjustment,Period
 from datetime import datetime
 import copy
+from django.http.response import JsonResponse
 
 
 
@@ -67,8 +68,6 @@ def new_version(request):
             atr.entity = e
             atr.save()
 
-        
-
         for a in entity_accounts:
             adjustments = Adjustment.objects.filter(account = a)
             old_period = a.period
@@ -84,8 +83,38 @@ def new_version(request):
                 adj.account = a
                 adj.save()
 
-
-    
-
-
     return Response(status=status.HTTP_201_CREATED)
+
+@api_view(['GET','PUT'])
+def scenario_notes(request):
+
+    if request.method == 'GET':
+        scn_id = request.GET.get("scn_id")
+        version = request.GET.get("version")
+
+        scn = Scenario.objects.get(
+            scn_id = scn_id,
+            version = version,
+        )
+
+        data = {
+            "data":scn.description
+        }
+
+        return JsonResponse(data)
+    if request.method == 'PUT':
+        print("---------------------------")
+        print(request.GET.get("scn_id"),request.GET.get("version"))
+        scn = Scenario.objects.get(
+            scn_id = request.GET.get("scn_id"),
+            version = request.GET.get("version"),
+        )
+ 
+        scn.description = request.GET.get("description")
+        scn.save()
+
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data)
+
+        return JsonResponse({})

@@ -59,6 +59,8 @@ urlpatterns = [
     path("clear-data/",calcviews.clear_data),   
     path("import/",importviews.importTables),
 
+    path("scn-notes/",functionviews.scenario_notes),
+    
     path("calc-log-list/",logviews.calcLogListAPI),
 
     path("import-log/",logviews.importLogAPI),
