@@ -50,22 +50,31 @@ import json
 
 # print(requests.get(endpoint,params=data).json())
 
-endpoint = "http://127.0.0.1:8000/scn-notes/"
+# endpoint = "http://127.0.0.1:8000/scn-notes/"
+# data ={
+#     "scn_id":90,
+#     "version": 4,
+#     "description": "test if this shit updated"
+
+# }
+
+# print(requests.put(endpoint,params=data).json())
+
+# get_data ={
+#     "scn_id":90,
+#     "version": 4,
+#     "description": "test if this shit updated"
+
+# }
+
+# print(requests.get(endpoint,params=get_data).json())
+
+endpoint = "http://127.0.0.1:8000/clone-scn/"
 data ={
-    "scn_id":90,
-    "version": 4,
-    "description": "test if this shit updated"
+    "scn_id":5,
+    "new_id":60,
+    "new_name":"wut"
 
 }
 
-print(requests.put(endpoint,params=data).json())
-
-get_data ={
-    "scn_id":90,
-    "version": 4,
-    "description": "test if this shit updated"
-
-}
-
-print(requests.get(endpoint,params=get_data).json())
-
+requests.post(endpoint,json=data)
