@@ -30,8 +30,10 @@ VERY IMPORTANT HANDLE SPACES AND NEW LINES IN INPUT DATA
 @api_view(['POST'])
 def importTables(request):
     # print(request.data)
+   
     scn_id = request.data["Scenario"]
     version = request.data["Version"]
+    print(scn_id,version)
     ImportLog.objects.all().delete()
     data = request.data["data"]
     scn = Scenario.objects.filter(scn_id=scn_id,version=version)[0]
@@ -80,6 +82,7 @@ def importEntities(table_data,scn):
     '''
     NOT CURRENTLY USING COUNTRY, ISO CURRENCYY CODE, ETC.
     '''
+    
     for row in table_data:
         entity_type = get_row(row,"Type")
         if entity_type == "[Blank]":
@@ -89,6 +92,7 @@ def importEntities(table_data,scn):
             "entity_type":entity_type,
             "scenario":scn.pk
         }
+       
         # print(data)
         serializer = EntitySerializer(data=data)
         if serializer.is_valid():
@@ -99,6 +103,8 @@ def importEntities(table_data,scn):
                 status = 0,
                 scenario = scn
             )
+            print(scn)
+            print(data)
             success_log.save()
             serializer.save()
             # return Response(serializer.data,status=status.HTTP_201_CREATED)

@@ -199,7 +199,7 @@ def extract_data(request, calc_model):
                 name = x["entity_name"],
                 scenario = scn
             )[0]
-            
+            print(x)
             period = Period.objects.filter(
                 period = x["pd_name"],
                 scenario = scn

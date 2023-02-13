@@ -51,7 +51,9 @@ class EntitySerializer(serializers.ModelSerializer):
             "name",
             "entity_type",
             "country",
+            "scenario"
         ]
+
 class AdjustmentSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -78,6 +80,9 @@ class AccountSerializer(serializers.ModelSerializer):
             "acc_class",
             "currency",
             "entity_name",
+            "scenario",
+            "entity",
+            "period"
         ]
 class Calculation(serializers.ModelSerializer):
     class Meta:
@@ -134,6 +139,6 @@ class CalcActionSerializer(serializers.ModelSerializer):
         model = CalcAction
         fields = [
             "entity_name",
-            "period_name",
+            "pd_name",
             "action"
         ]

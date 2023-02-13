@@ -204,9 +204,9 @@ class CalcAction(models.Model):
     @property
     def entity_name(self):
         return self.entity.name
-        
+
     @property
-    def period_name(self):
+    def pd_name(self):
         return self.period.period
 
 
