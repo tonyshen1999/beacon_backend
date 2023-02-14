@@ -109,7 +109,15 @@ class Attribute(models.Model):
     def entity_name(self):
         return  self.entity.name
     
+class DefaultAttribute(models.Model):
+    entity_type = models.CharField(max_length=100)
+    attribute_name = models.CharField(max_length=100)
+    attribute_value = models.CharField(max_length=50)
+    begin_date = models.DateField()
+    end_date = models.DateField(null=True, blank = True)
 
+    class Meta:
+        unique_together = ('entity_type','attribute_name')
 
 class Account(models.Model):
 
@@ -152,6 +160,10 @@ class Account(models.Model):
             )
             a.save()
         return adjustments
+
+
+
+
 
 class Calculation(models.Model):
     date_time = models.DateTimeField(auto_now=True, blank=True, null = True)
