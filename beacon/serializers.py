@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship, Calculation, CalcAction
+from .models import Period,Scenario,Entity, Attribute, Account, Adjustment, Country,  Currency, Relationship, Calculation, CalcAction, DefaultAttribute
 from .logmodel import Log, ImportLog
 
 class PeriodSerializer(serializers.ModelSerializer):
@@ -134,6 +134,7 @@ class ImportLogSerializer(serializers.ModelSerializer):
             "scenario",
             "log_text"
         ]
+
 class CalcActionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CalcAction
@@ -141,4 +142,17 @@ class CalcActionSerializer(serializers.ModelSerializer):
             "entity_name",
             "pd_name",
             "action"
+        ]
+
+class DefaultAttributeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DefaultAttribute
+        fields = [
+            "attribute_value",
+            "attribute_name",
+            "begin_date",
+            "end_date",
+            "entity_type",
+            "scenario",
         ]

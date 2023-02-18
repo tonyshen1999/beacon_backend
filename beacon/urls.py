@@ -43,7 +43,7 @@ urlpatterns = [
 
     path("atr/",views.attributeAPI),
     path("atr/<int:pk>",views.AttributeDetailAPIView.as_view()),
-
+    path("def-atr/",views.defaultAttributesAPI),
     path("acc/",views.accountAPI),
     path("acc/<int:pk>",views.AccountDetailAPIView.as_view()),
 
@@ -59,6 +59,8 @@ urlpatterns = [
     path("clear-data/",calcviews.clear_data),   
     path("import/",importviews.importTables),
 
+    path("atr-type/",importviews.attributeScenarioTypes),
+    path("atr-filter/",importviews.filterAttributes),
 
     path("scn-notes/",functionviews.scenario_notes),
 
@@ -73,6 +75,7 @@ urlpatterns = [
     path("log/",logviews.logAPI),
 
     path("clear-db/",calcviews.clear_db),
+    path("push-def-atr/",functionviews.push_default_attributes)
 
     # url(r'^', include(router.urls)),
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))

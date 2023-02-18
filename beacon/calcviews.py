@@ -187,10 +187,11 @@ def extract_data(request, calc_model):
     #     version = data["scn_version"]
     # )[0]
     scn = calc_model.scenario
-    print(scn)
-    
+
+    print("scenario------",scn)
       
     relationships = Relationship.objects.filter(scenario = scn)
+    print(relationships)
     entity_list = []
     if "entities" in data:
         for x in data["entities"]:
@@ -213,6 +214,7 @@ def extract_data(request, calc_model):
             # print(e)
             children_rel = relationships.filter(parent=entity)
             if children_rel.count() > 0:
+                print("--------------\n THIS MEANS THERE ARE CHILDREN")
                 for r in children_rel:
                     c = create_entity_calc(r.child,period, calc_model)
                     e.set_child(child=c,percent_owned=r.ownership_percentage)

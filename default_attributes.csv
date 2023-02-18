@@ -1,0 +1,10 @@
+﻿AttributeName,AttributeValue,AttributeStartDate,AttributeEndDate,Entity Type,Scenario
+163jLimit_Perc,0.3,2017-12-31,,All,Default
+USTaxRate,0.21,2017-12-31,,All,Default
+163JCalc,FALSE,2017-12-31,,All,No 163j
+163JCalc,TRUE,2017-12-31,,All,Default
+Section951AHighTaxElection,TRUE,2017-12-31,,CFC,Default
+Section951AHighTaxElection,FALSE,2017-12-31,,CFC,No HTE
+HTETaxPercentage,0.9,2017-12-31,,CFC,Default
+TestedLossQBAIAmount,0.1,2017-12-31,,CFC,Default
+QBAIPerc,0.1,2017-12-31,,CFC,Default

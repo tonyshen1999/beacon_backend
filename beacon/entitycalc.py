@@ -311,7 +311,7 @@ class USSHCalc(EntityCalc):
         children = self.children
         collect = "USSH951A"
         qbai_perc = 0 # this is a little wonky
-
+        print("----------------\n num children:",len(children))
         # x is type EntityCalc
         for x in children.keys():
             x.calculate()

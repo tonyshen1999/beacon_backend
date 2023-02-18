@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics,viewsets
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer,RelationshipSerializer
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, DefaultAttribute
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer,RelationshipSerializer, DefaultAttributeSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from django.views.decorators.csrf import csrf_exempt
@@ -152,8 +152,10 @@ def adjustmentAPI(request):
 def attributeAPI(request):
     
     if request.method == 'GET':
-       
-        attributes = Attribute.objects.all()
+
+        scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
+        attributes = Attribute.objects.filter(entity__scenario=scn).all()
+
 
         serializer = AttributeSerializer(attributes,many=True)
         # return JsonResponse(attributes, safe=False)
@@ -167,6 +169,16 @@ def attributeAPI(request):
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def defaultAttributesAPI(request):
+
+    def_atr = DefaultAttribute.objects.all()
+    print(def_atr)
+    serializer = DefaultAttributeSerializer(def_atr,many=True)
+
+    return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+
 
 @api_view(['GET','POST'])
 def relationshipAPI(request):

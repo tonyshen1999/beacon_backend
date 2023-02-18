@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
-from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer, ImportLogSerializer
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, DefaultAttribute
+from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer, ImportLogSerializer, DefaultAttributeSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
 from TestModel import TestModel
@@ -52,7 +52,9 @@ def importTables(request):
     # Attribute import a little wonky
     if "Attributes" in data.keys():
         importAttributes(data["Attributes"],scn)
-        
+    else:
+        atr_set = DefaultAttribute.objects.filter(scenario = "Default").all()
+        pushDefaultAttributes(scn,atr_set)
     if "Adjustments" in data.keys():
         importAdjustments(data["Adjustments"],scn)
         # print(data["Adjustments"])
@@ -301,6 +303,77 @@ def importAccounts(table_data,scn):
         #     scenario = scn
         # )
         # account.save()
+
+def pushDefaultAttributes(scenario,atr_set):
+    entities = Entity.objects.filter(scenario = scenario).all()
+
+    for e in entities:
+
+        def_atr = atr_set.filter(entity_type = "All").all()
+        for d_a in def_atr:
+            atr = d_a.pull_attribute()
+            atr.entity = e
+            atr.save()
+
+        e_type = e.entity_type
+        specific_atr = atr_set.filter(entity_type = e_type).all()
+
+        for d_a in specific_atr:
+            atr = d_a.pull_attribute()
+            atr.entity = e
+            atr.save()
+
+
+@api_view(['GET'])
+def attributeScenarioTypes(request):
+
+    type_set = set()
+
+    def_atr = DefaultAttribute.objects.all()
+
+    for da in def_atr:
+        type_set.add(da.scenario)
+    
+    type_set = list(type_set)
+    print(type_set)
+
+    data = {
+        "types":[]
+    }
+    
+    for t in type_set:
+        data["types"].append({"type":t})
+
+    return Response(data=data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def filterAttributes(request):
+
+    scn = Scenario.objects.get(
+        scn_id = request.GET.get("scn_id"),
+        version = request.GET.get("version")
+    )
+
+    type_filter = request.GET.get("scenario")
+
+    if type_filter is None or type_filter == "":
+        return Response(data=DefaultAttributeSerializer(DefaultAttribute.objects.filter(
+            scenario="Default"
+        ).all(),many=True).data,status=status.HTTP_200_OK)
+
+    # print(type_filter)
+    # print(len(DefaultAttribute.objects.all()))
+
+    def_atr_unique = DefaultAttribute.objects.filter(scenario = type_filter)
+    # print(def_atr_unique)
+    def_atr_all = DefaultAttribute.objects.filter(scenario="Default").exclude(
+        attribute_name = def_atr_unique[0].attribute_name).union(def_atr_unique)
+    
+        
+    # print(len(def_atr_all))
+    serializer = DefaultAttributeSerializer(def_atr_all,many=True)
+
+    return Response(data=serializer.data,status=status.HTTP_200_OK)
 
 
 def importAttributes(table_data,scn):

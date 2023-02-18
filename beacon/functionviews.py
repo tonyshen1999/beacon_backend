@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics
 
-from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship
+from .models import Period,Scenario,Entity,Attribute, Country, Currency, Account, Adjustment, Relationship, DefaultAttribute
 from .serializers import PeriodSerializer,ScenarioSerializer,EntitySerializer, AttributeSerializer, AccountSerializer,AdjustmentSerializer, RelationshipSerializer
 from django_filters import rest_framework as filters
 from django_filters import ModelChoiceFilter
@@ -14,8 +14,7 @@ from .models import Scenario,Entity,Account,Attribute,Adjustment,Period
 from datetime import datetime
 import copy
 from django.http.response import JsonResponse
-
-
+from pandas import pandas as pd
 
 @api_view(['POST'])
 def new_version(request):
@@ -94,7 +93,7 @@ def scenario_notes(request):
         #     serializer.save()
         #     return Response(serializer.data)
 
-        return JsonResponse({})
+        return Response(status=status.HTTP_201_CREATED)
 def duplicate_scenario(current,new_scenario):
 
     accounts = Account.objects.filter(scenario=current)
@@ -115,21 +114,29 @@ def duplicate_scenario(current,new_scenario):
     for e in entities:
         atrs = Attribute.objects.filter(entity=e).all()
         entity_accounts = accounts.filter(entity=e)
-        relationship_parent = Relationship.objects.filter(parent=e)
+        relationship_parent = Relationship.objects.filter(parent=e,scenario=new_scenario)
 
 
 
-        relationship_child = Relationship.objects.filter(child=e)
+        relationship_child = Relationship.objects.filter(child=e,scenario=new_scenario)
 
 
         e.pk = None
         e.scenario = new_scenario
         e.save()
-        if relationship_parent.count() > 0:
-            relationship_parent[0].parent = e
-        if relationship_child.count() > 0:
-            relationship_child[0].child = e
-        # print(e)
+        # if relationship_parent.count() > 0:
+        #     relationship_parent.parent = e
+        #     relationship_parent.save()
+
+        # if relationship_child.count() > 0:
+        #     relationship_child.child = e
+        #     relationship_child.save()
+        for p in relationship_parent:
+            p.parent = e
+            p.save()
+        for c in relationship_child:
+            c.child = e
+            c.save()
         for atr in atrs:
             atr.pk = None
             atr.entity = e
@@ -149,3 +156,24 @@ def duplicate_scenario(current,new_scenario):
                 adj.pk = None
                 adj.account = a
                 adj.save()
+    return Response(status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def push_default_attributes(request):
+    '''
+    Only run when default attributes are updated
+    '''
+    DefaultAttribute.objects.all().delete()
+    attributes_df = pd.read_csv("default_attributes.csv")
+    print(attributes_df)
+    for index, row in attributes_df.iterrows():
+        def_atr = DefaultAttribute(
+            entity_type = row['Entity Type'],
+            attribute_name = row["AttributeName"],
+            attribute_value = row['AttributeValue'],
+            begin_date = str(row['AttributeStartDate']),
+            scenario = row['Scenario']
+        )
+        def_atr.save()
+
+    return Response(status=status.HTTP_201_CREATED)

@@ -69,12 +69,22 @@ import json
 
 # print(requests.get(endpoint,params=get_data).json())
 
-endpoint = "http://127.0.0.1:8000/clone-scn/"
-data ={
-    "scn_id":5,
-    "new_id":60,
-    "new_name":"wut"
+# endpoint = "http://127.0.0.1:8000/push-def-atr/"
+# data ={
+#     "scn_id":5,
+#     "new_id":60,
+#     "new_name":"wut"
 
+# }
+
+# requests.post(endpoint,json=data)
+
+
+
+endpoint = "http://127.0.0.1:8000/atr-filter/"
+params = {
+    "scn_id":35,
+    "version": 1,
+    "scenario": ""
 }
-
-requests.post(endpoint,json=data)
+print(requests.get(endpoint, params=params).json())

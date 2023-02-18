@@ -99,7 +99,7 @@ class Attribute(models.Model):
     begin_date = models.DateField()
     end_date = models.DateField(null=True, blank = True)
     # scenario = models.ForeignKey(Scenario,on_delete=models.CASCADE)
-    entity = models.ForeignKey(Entity,on_delete=models.CASCADE)
+    entity = models.ForeignKey(Entity,on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         unique_together = ('entity','attribute_name')
@@ -113,12 +113,26 @@ class DefaultAttribute(models.Model):
     entity_type = models.CharField(max_length=100)
     attribute_name = models.CharField(max_length=100)
     attribute_value = models.CharField(max_length=50)
+    scenario = models.CharField(max_length=100)
     begin_date = models.DateField()
     end_date = models.DateField(null=True, blank = True)
 
     class Meta:
-        unique_together = ('entity_type','attribute_name')
+        unique_together = ('entity_type','attribute_value','attribute_name')
+    
+    def __str__(self):
+        return "Name: " + self.attribute_name + ", Value: " + self.attribute_value + ", Entity Type:" + self.entity_type + ", Scenario: " +self.scenario
 
+    def pull_attribute(self):
+        atr = Attribute(
+            attribute_name = self.attribute_name,
+            attribute_value = self.attribute_value,
+            begin_date = self.begin_date,
+            end_date = self.end_date,
+            entity = None
+        )
+
+        return atr
 class Account(models.Model):
 
     account_name = models.CharField(max_length=100)
