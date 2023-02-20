@@ -54,7 +54,7 @@ def calcLogListAPI(request):
     data = {}
 
     for c in calc_logs:
-        data[str(c.date_time)] = LogSerializer(Log.objects.filter(calculation=c).all(),many=True).data
+        data[str(c.pk)] = LogSerializer(Log.objects.filter(calculation=c).all(),many=True).data
     
     # for l in data.keys():
     #     print("date:" + str(l))

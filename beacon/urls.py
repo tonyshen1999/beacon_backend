@@ -40,7 +40,7 @@ urlpatterns = [
     path("entity/",views.entityAPI),
     path("entity/<int:pk>",views.EntityDetailAPIView.as_view()),
 
-
+    path("revert/", functionviews.revert_version),
     path("atr/",views.attributeAPI),
     path("atr/<int:pk>",views.AttributeDetailAPIView.as_view()),
     path("def-atr/",views.defaultAttributesAPI),

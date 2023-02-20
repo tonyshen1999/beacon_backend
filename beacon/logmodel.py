@@ -21,7 +21,7 @@ class Log(models.Model):
     ]
     '''
 
-    account = models.ForeignKey(Account,on_delete = models.CASCADE,blank = True, null = True)
+    account = models.CharField(max_length=300)
     status = models.IntegerField(default=0,primary_key=False)
     message = models.TextField(null=True,blank=True)
     date_time = models.DateTimeField(auto_now=True)
@@ -30,7 +30,7 @@ class Log(models.Model):
     @property
     def log_text(self):
         message = ""
-        acct_str = self.account.__str__()
+        acct_str = self.account
         if self.status == 0:
             message +=  "Successfully created <" + acct_str + ">"
 
@@ -42,7 +42,7 @@ class Log(models.Model):
         return message
 
     def __str__(self):
-        return self.log_text
+        return str(self.calculation.pk) + ", " + self.log_text
 
 class ImportLog(models.Model):
     log_type = models.CharField(max_length=20)

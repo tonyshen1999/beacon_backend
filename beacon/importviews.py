@@ -29,13 +29,16 @@ VERY IMPORTANT HANDLE SPACES AND NEW LINES IN INPUT DATA
 
 @api_view(['POST'])
 def importTables(request):
-    # print(request.data)
    
     scn_id = request.data["Scenario"]
     version = request.data["Version"]
-    print(scn_id,version)
+    push_atr = request.data["PushAttributes"]
+    
+
+
     ImportLog.objects.all().delete()
     data = request.data["data"]
+    print("data keys:", data.keys())
     scn = Scenario.objects.filter(scn_id=scn_id,version=version)[0]
     # scn.modify_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     scn.save()
@@ -49,30 +52,23 @@ def importTables(request):
     if "Accounts" in data.keys():
         importAccounts(data["Accounts"],scn)
 
-    # Attribute import a little wonky
     if "Attributes" in data.keys():
         importAttributes(data["Attributes"],scn)
-    else:
+
+    elif push_atr:
         atr_set = DefaultAttribute.objects.filter(scenario = "Default").all()
         pushDefaultAttributes(scn,atr_set)
+
     if "Adjustments" in data.keys():
         importAdjustments(data["Adjustments"],scn)
-        # print(data["Adjustments"])
-
-
 
     return_data = {
         "Success": ImportLogSerializer(ImportLog.objects.filter(status=0),many=True).data,
         "Message": ImportLogSerializer(ImportLog.objects.filter(status=1),many=True).data,
         "Errors": ImportLogSerializer(ImportLog.objects.filter(status=2),many=True).data,
     }
-    # print(return_data)
-        
+
     return Response(return_data,status=status.HTTP_201_CREATED)
-    # else:
-    #     print(success_serializer.errors)
-    #     return Response({},status=status.HTTP_400_BAD_REQUEST)
-    
 
 def get_row(row,item):
     if item in row.keys():
@@ -177,28 +173,7 @@ def importRelationships(table_data,scn):
                 message = str(own_row) + " must be a float type (format as decimal and NOT Percentage)"
             )
             log.save()
-            # raise Exce
-            # raise Exception(get_row(row,"Child")  + " is not a defined entity")
-        # data = {
-        #     "parent":parent,
-        #     "child":child,
-        #     "ownership_percentage":float(get_row(row,"Ownership Percentage")),
-        #     "scenario":scn
-        # }
-        # print(data)
-        # serializer = RelationshipSerializer(data = data)
-        # if serializer.is_valid():
-        #     print("saved at least once")
-        #     serializer.save()
-        # else:
-        #     error_log = ImportLog(
-        #         log_type = "Relationships",
-        #         name = "Parent:" + get_row(row,"Parent") + ", Child: " + get_row(row,"Child"),
-        #         status = 2,
-        #         scenario = scn,
-        #         message = get_row(row,"Child") + " is not a defined entity for 'Child' in Relationships Table"
-        #     )
-        #     error_log.save()
+
         if valid:
             relationship = Relationship.objects.create(
                 parent=parent,
@@ -220,9 +195,10 @@ NOT CURRENTLY USING CURRENCY, ACCOUNT CLASS, DATA TYPE
 '''
 def importAccounts(table_data,scn):
 
-    Account.objects.filter(scenario=scn,collection="TBFC").all().delete()
+    print("importing accounts...")
+    Account.objects.filter(scenario=scn).all().delete()
     for row in table_data:
-        # print(row['Entity'])
+        
         try:
             pd_pk = Period.objects.filter(period=get_row(row,"Period").strip(),scenario=scn)[0].pk
         except:
@@ -239,6 +215,7 @@ def importAccounts(table_data,scn):
                         to finding a PY Carryforward, which won't impact period being calculated)"
                 )
                 message_log.save()
+
             else:
                 pd_row = get_row(row,"Period")
 
@@ -305,6 +282,7 @@ def importAccounts(table_data,scn):
         # account.save()
 
 def pushDefaultAttributes(scenario,atr_set):
+
     entities = Entity.objects.filter(scenario = scenario).all()
 
     for e in entities:
@@ -348,6 +326,10 @@ def attributeScenarioTypes(request):
 
 @api_view(['GET'])
 def filterAttributes(request):
+
+    print("laksjdflksjdflaksdjflaskjdfalksdj")
+
+    print(request.GET.get("scn_id"),request.GET.get("version"))
 
     scn = Scenario.objects.get(
         scn_id = request.GET.get("scn_id"),

@@ -45,6 +45,22 @@ def delete_scenario(request):
 
     return Response(status=status.HTTP_201_CREATED)
 
+@api_view(['POST'])
+def revert_version(request):
+
+    data = request.data["params"]
+    
+    current = Scenario.objects.filter(scn_id=data["scn_id"]).order_by('-version')[0]
+    new_scenario = copy.deepcopy(current)
+    new_scenario.pk = None
+    new_scenario.version = current.version+1
+    new_scenario.save()
+    revert_version = Scenario.objects.get(scn_id=data["scn_id"], version = data["version"])
+    revert_version.save()
+    duplicate_scenario(revert_version,new_scenario)
+    response_data = {"new_version":new_scenario.version}
+    return Response(response_data,status=status.HTTP_201_CREATED)
+
 
 @api_view(['POST'])
 def clone_scenario(request):

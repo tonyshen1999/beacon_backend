@@ -63,7 +63,7 @@ class EntityCalc:
        
         a.save()
         # print(a.scenario,a.entity,a)
-        log = Log(account=a,status=0,calculation = self.calc_model)
+        log = Log(account=a.__str__(),status=0,calculation = self.calc_model)
         log.save()
     
     def set_child(self, child, percent_owned):
@@ -87,7 +87,7 @@ class EntityCalc:
                 scenario = self.scenario
             )
             a.save()
-            log = Log(account=a,status=1,message="Account was not found, so new account was created with 0 as amount",calculation=self.calc_model)
+            log = Log(account=a.__str__(),status=1,message="Account was not found, so new account was created with 0 as amount",calculation=self.calc_model)
             log.save()
             
 

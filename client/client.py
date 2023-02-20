@@ -14,11 +14,9 @@ import json
 # requests.post(endpoint,json=data)
 
 
-# endpoint = "http://127.0.0.1:8000/log/"
+# endpoint = "http://127.0.0.1:8000/calc-log-list/"
 # data = {
-#     'period': 'CYE2022', 
-#     'entity': 'USSH', 
-#     'scn_id': '1', 
+#     'scn_id': '55', 
 #     'scn_version': '1'}
 
 # print(requests.get(endpoint,params=data).json())
@@ -32,14 +30,14 @@ import json
 
 # print(requests.get(endpoint,data).json())
 
-# endpoint = "http://127.0.0.1:8000/calc-log-list/"
-# data ={
-#     "scn_id":90,
-#     "scn_version": 1,
+endpoint = "http://127.0.0.1:8000/calc-log-list/"
+data ={
+    "scn_id":1,
+    "scn_version": 1,
 
-# }
+}
 
-# print(requests.get(endpoint,params=data).json())
+print(requests.get(endpoint,params=data).json())
 
 # endpoint = "http://127.0.0.1:8000/acc/"
 # data ={
@@ -81,10 +79,10 @@ import json
 
 
 
-endpoint = "http://127.0.0.1:8000/atr-filter/"
-params = {
-    "scn_id":35,
-    "version": 1,
-    "scenario": ""
-}
-print(requests.get(endpoint, params=params).json())
+# endpoint = "http://127.0.0.1:8000/atr-filter/"
+# params = {
+#     "scn_id":35,
+#     "version": 1,
+#     "scenario": "Default"
+# }
+# print(len(requests.get(endpoint, params=params).json()))

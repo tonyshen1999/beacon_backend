@@ -66,7 +66,7 @@ def scenariosAPI(request):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET','POST'])
+@api_view(['GET','POST','PUT'])
 def entityAPI(request):
     if request.method == 'GET':
         print(request.GET.get("scn_id"))
@@ -84,7 +84,7 @@ def entityAPI(request):
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-@api_view(['GET','POST'])
+@api_view(['GET','POST','PUT'])
 def periodAPI(request):
     print(request.method)
     if request.method == 'GET':
@@ -113,7 +113,7 @@ def periodAPI(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET','POST'])
+@api_view(['GET','POST','PUT'])
 def accountAPI(request):
     if request.method == 'GET':
         scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
@@ -131,7 +131,7 @@ def accountAPI(request):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET','POST'])
+@api_view(['GET','POST','PUT'])
 def adjustmentAPI(request):
     if request.method == 'GET':
         scn = Scenario.objects.filter(scn_id=request.GET.get("scn_id"),version=request.GET.get("version"))[0]
@@ -148,7 +148,7 @@ def adjustmentAPI(request):
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-@api_view(['GET','POST'])
+@api_view(['GET','POST','PUT'])
 def attributeAPI(request):
     
     if request.method == 'GET':
@@ -180,7 +180,7 @@ def defaultAttributesAPI(request):
     return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
 
 
-@api_view(['GET','POST'])
+@api_view(['GET','POST','PUT'])
 def relationshipAPI(request):
     
     if request.method == 'GET':

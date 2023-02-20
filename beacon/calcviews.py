@@ -42,7 +42,7 @@ def calculate(request):
     )[0]
     print(scn)
     data = request.data
-    calc_model = Calculation(scenario=scn)
+    calc_model = Calculation(scenario=scn,pk = None)
     calc_model.save()
 
     e_list = extract_data(request,calc_model)
@@ -188,10 +188,9 @@ def extract_data(request, calc_model):
     # )[0]
     scn = calc_model.scenario
 
-    print("scenario------",scn)
+
       
     relationships = Relationship.objects.filter(scenario = scn)
-    print(relationships)
     entity_list = []
     if "entities" in data:
         for x in data["entities"]:
@@ -200,7 +199,6 @@ def extract_data(request, calc_model):
                 name = x["entity_name"],
                 scenario = scn
             )[0]
-            print(x)
             period = Period.objects.filter(
                 period = x["pd_name"],
                 scenario = scn
