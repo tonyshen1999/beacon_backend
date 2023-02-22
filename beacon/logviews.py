@@ -54,11 +54,14 @@ def calcLogListAPI(request):
     data = {}
 
     for c in calc_logs:
-        data[str(c.pk)] = LogSerializer(Log.objects.filter(calculation=c).all(),many=True).data
+        return_data = {
+            "Success":  LogSerializer(Log.objects.filter(calculation=c,status=0).all(),many=True).data,
+            "Message":  LogSerializer(Log.objects.filter(calculation=c,status=1).all(),many=True).data,
+            "Errors":  LogSerializer(Log.objects.filter(calculation=c,status=2).all(),many=True).data,
+         }
+        data[str(c.date_time)] = return_data#LogSerializer(Log.objects.filter(calculation=c).all(),many=True).data
     
-    # for l in data.keys():
-    #     print("date:" + str(l))
-    #     print(data[l])
+
 
     return JsonResponse(data)
 
