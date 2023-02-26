@@ -287,6 +287,9 @@ def pushDefaultAttributes(scenario,atr_set):
 
     for e in entities:
 
+        if Attribute.objects.filter(entity=e).count() > 0:
+            Attribute.objects.filter(entity=e).delete()
+
         def_atr = atr_set.filter(entity_type = "All").all()
         for d_a in def_atr:
             atr = d_a.pull_attribute()
@@ -300,6 +303,33 @@ def pushDefaultAttributes(scenario,atr_set):
             atr = d_a.pull_attribute()
             atr.entity = e
             atr.save()
+
+@api_view(['POST'])
+def customAttributes(request):
+
+    data = request.data
+    scn = Scenario.objects.get(scn_id=data["scn_id"],version=data["scn_version"])
+
+    atrs = data["attributes"]
+    DefaultAttribute.objects.all().delete()
+    # print(atrs)
+    for a in atrs:
+        print(a)
+        da = DefaultAttribute(
+            entity_type = a['entity_type'],
+            attribute_name = a['attribute_name'],
+            attribute_value = a['attribute_value'],
+            scenario = 'Default',
+            begin_date = a['begin_date'],
+            end_date = a['end_date']
+        )
+        da.save()
+    
+    atr_set = DefaultAttribute.objects.filter(scenario='Default')
+
+    pushDefaultAttributes(scn,atr_set)
+
+    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -327,7 +357,6 @@ def attributeScenarioTypes(request):
 @api_view(['GET'])
 def filterAttributes(request):
 
-    print("laksjdflksjdflaksdjflaskjdfalksdj")
 
     print(request.GET.get("scn_id"),request.GET.get("version"))
 

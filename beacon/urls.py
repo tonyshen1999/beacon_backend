@@ -67,7 +67,7 @@ urlpatterns = [
     path("clone-scn/",functionviews.clone_scenario),
     path("delete-scn/",functionviews.delete_scenario),
 
-    
+    path("push-custom-atr/",importviews.customAttributes),
     path("calc-log-list/",logviews.calcLogListAPI),
 
     path("import-log/",logviews.importLogAPI),
